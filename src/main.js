@@ -6,35 +6,66 @@ import VuexPersistence from 'vuex-persist';
 import App from './App';
 import router from './router';
 import Web3 from 'web3';
+import BootstrapVue from "bootstrap-vue";
+import 'bootstrap/dist/css/bootstrap.css';
+import 'bootstrap-vue/dist/bootstrap-vue.css';
 
 Vue.config.productionTip = false;
 Vue.use(Vuex);
+Vue.use(BootstrapVue);
 Vue.prototype.$web3 = new Web3(Web3.givenProvider || Web3.currentProvider || "ws://localhost:7545");
 window.web3 = Vue.prototype.$web3;
 
-const vuexLocal = new VuexPersistence({ storage: window.localStorage });
+const vuexLocal = new VuexPersistence({
+    storage: window.localStorage,
+    reducer: state => ({marketplace: state.marketplace})
+});
 
-const store = new Vuex.Store({
+const contractsStore = {
+    namespaced: true,
     state: {
-        contracts: {}
+        contractManifests: []
     },
     mutations: {
-        addContract: (state, payload) => {
-            state.contracts[payload.id] = payload.contract;
+        addContractManifest: (state, payload) => {
+            state.contractManifests.push(payload);
         },
-        resetContracts: (state) => {
-            contracts = {}
+        resetContractManifests: (state) => {
+            contractManifests = []
+        },
+        addDeploymentToManifest: (state, payload) => {
+            state.contractManifests.find(manifest => manifest.id === payload.id).deployedContract = payload.deployedContract;
         }
     },
     getters: {
-        getContractById: (state) => (id) => {
-            return state.contracts[id];
+        getContractManifest: (state) => (idx) => {
+            return state.contractManifests[idx];
         }
     },
-    //plugins: [vuexLocal.plugin]
+    actions: {
+    }
+};
+
+const marketplaceStore = {
+    namespaced: true,
+    state: {
+        accounts: []
+    },
+    mutations: {
+        updateAccounts: (state, payload) => {
+            state.accounts = payload;
+        }
+    }
+};
+
+const store = new Vuex.Store({
+    modules: {
+        contracts: contractsStore,
+        marketplace: marketplaceStore
+    },
+    plugins: [vuexLocal.plugin]
 });
 
-/* eslint-disable no-new */
 Window.app = new Vue({
     el: '#app',
     store,
