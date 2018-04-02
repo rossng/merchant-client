@@ -1,18 +1,20 @@
 <template>
     <div id="app">
         <h1>Merchant Client</h1>
-        <UploadCode/>
+        <DeployContract/>
+        <AccountList/>
         <Marketplace/>
     </div>
 </template>
 
 <script>
-    import UploadCode from "./components/UploadCode";
+    import DeployContract from "./components/DeployContract";
+    import AccountList from "./components/AccountList"
     import Marketplace from "./components/Marketplace";
 
     export default {
         name: 'App',
-        components: {Marketplace, UploadCode}
+        components: {Marketplace, DeployContract, AccountList}
     };
 </script>
 

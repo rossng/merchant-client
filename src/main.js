@@ -49,19 +49,33 @@ const contractsStore = {
 const marketplaceStore = {
     namespaced: true,
     state: {
-        accounts: []
+        marketplaceAddress: null
+    },
+    mutations: {
+        setMarketplaceAddress: (state, payload) => {
+            state.marketplaceAddress = payload;
+        }
+    }
+};
+
+const accountsStore = {
+    namespaced: true,
+    state: {
+        accounts: [],
     },
     mutations: {
         updateAccounts: (state, payload) => {
             state.accounts = payload;
-        }
-    }
+        },
+    },
+    plugins: [vuexLocal.plugin]
 };
 
 const store = new Vuex.Store({
     modules: {
         contracts: contractsStore,
-        marketplace: marketplaceStore
+        marketplace: marketplaceStore,
+        accounts: accountsStore
     },
     plugins: [vuexLocal.plugin]
 });

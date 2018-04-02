@@ -1,20 +1,21 @@
 <template>
-    <div>
+    <div id="deploy-contract">
         <h2>Deploy Contract</h2>
         <div>
             <b-form-file v-model="file" :state="haveFile" placeholder="Choose a file..."
-                         ref="fileinput"></b-form-file>
-            <div class="mt-3">Selected file: {{file && file.name}}</div>
+                         ref="fileinput" class="mb-3"></b-form-file>
             <b-button @click="clearFiles">Clear</b-button>
             <b-button @click="resetContractManifests">Remove all contracts</b-button>
-            <b-button @click="getCoinbase">Coinbase</b-button>
             <b-button @click="uploadAndDeploy" :disabled="!haveFile">Deploy Contract</b-button>
-            <ul>
-                <li v-for="manifest in contractManifests">
-                    <strong>{{manifest.name}}</strong>: {{(manifest.deployedContract &&
-                    manifest.deployedContract.options.address) || 'Not deployed'}}
-                </li>
-            </ul>
+            <div class="mt-3">
+                <b-card v-for="manifest in contractManifests" :key="manifest.id" :title="manifest.name" class="mb-3"
+                        style="max-width: 20rem;">
+                    <p class="card-text">{{(manifest.deployedContract &&
+                        manifest.deployedContract.options.address) || 'Not deployed'}}</p>
+                    <ProposeContract v-if="manifest.deployedContract"
+                                     :contract-address="manifest.deployedContract.options.address"/>
+                </b-card>
+            </div>
         </div>
     </div>
 </template>
@@ -22,9 +23,11 @@
 <script>
     import {mapState, mapMutations, mapGetters} from 'vuex';
     import * as cuid from 'cuid';
+    import ProposeContract from "./ProposeContract";
 
     export default {
-        name: 'UploadCode',
+        name: 'DeployContract',
+        components: {ProposeContract},
         data() {
             return {
                 file: null,
@@ -33,6 +36,7 @@
         },
         computed: {
             ...mapState('contracts', ['contractManifests']),
+            ...mapState('marketplace', ['marketplaceAddress']),
             ...mapGetters('contracts', ['getContractManifest']),
             haveFile() {
                 return Boolean(this.file);
@@ -59,14 +63,13 @@
                 console.log(`Parsed contract '${manifest.name}' (${manifest.id})`);
                 this.addContractManifest(manifest);
                 let self = this;
-
                 let contract = new this.web3.eth.Contract(manifest.abi);
                 contract.deploy({
-                    arguments: [],
+                    arguments: [this.marketplaceAddress],
                     data: manifest.bin,
                 }).send({
                     from: coinbase,
-                    gas: 200000,
+                    gas: 10000000,
                     gasPrice: '20000000000'
                 }).on('error', function (error) {
                     console.log('Error: ' + error);
@@ -101,5 +104,11 @@
 
     a {
         color: #42b983;
+    }
+
+    #deploy-contract {
+        border: 1px solid grey;
+        margin: 10px;
+        padding: 10px;
     }
 </style>
