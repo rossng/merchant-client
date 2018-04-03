@@ -10,6 +10,9 @@ contract Marketplace {
         bool signed;
     }
 
+    event Proposed(address contractAddress, address indexed to);
+    event Signed(address contractAddress);
+
     address public owner_;
 
     mapping(address => ContractMetadata) public contracts_;
@@ -29,12 +32,14 @@ contract Marketplace {
     function propose(address contractAddress, address to) public {
         require(!contracts_[contractAddress].signed);
         contracts_[contractAddress] = ContractMetadata(msg.sender, to, false);
+        emit Proposed(contractAddress, to);
     }
 
     function sign(address contractAddress) public {
         require(msg.sender == contracts_[contractAddress].holder);
         require(!contracts_[contractAddress].signed);
         contracts_[contractAddress].signed = true;
+        emit Signed(contractAddress);
     }
 
     function receive(Commodity commodity, uint quantity) public {
@@ -67,11 +72,14 @@ contract Marketplace {
 
 
 contract BaseContract {
+    event Delegated(BaseContract to);
     Marketplace public marketplace_;
 
     function BaseContract(Marketplace marketplace) public {
         marketplace_ = marketplace;
     }
+
+    function proceed() public;
 
     function receive(Marketplace.Commodity commodity, uint quantity) internal {
         marketplace_.receive(commodity, quantity);
@@ -91,7 +99,7 @@ contract Zero is BaseContract {
 
 
 contract One is BaseContract {
-    Marketplace.Commodity commodity_;
+    Marketplace.Commodity public commodity_;
 
     function One(Marketplace marketplace, Marketplace.Commodity commodity) public BaseContract(marketplace) {
         commodity_ = commodity;
@@ -111,6 +119,7 @@ contract MyContract is BaseContract {
         require(marketplace_.signed(address(this)));
         One next = new One(marketplace_, Marketplace.Commodity.USD);
         marketplace_.delegate(next);
+        emit Delegated(next);
         next.proceed();
         kill();
     }

@@ -1,7 +1,6 @@
 <template>
-    <div id="propose-contract">
-        <b-form-input v-model="to" type="text" placeholder="To address" class="mb-3"></b-form-input>
-        <b-button @click="proposeContract" class="mb-3">Propose</b-button>
+    <div id="proceed-contract">
+        <b-button @click="proceedContract" class="mb-3">Proceed</b-button>
     </div>
 </template>
 
@@ -9,16 +8,17 @@
     import {mapState, mapMutations} from 'vuex';
 
     export default {
-        name: "ProposeContract",
+        name: "ProceedContract",
         beforeMount() {
             this.marketplaceContract.options.address = this.marketplaceAddress;
+            this.contract.options.address = this.contractAddress;
         },
         props: ['contractAddress'],
         data() {
             return {
+                contract: this.$baseContract.clone(),
                 marketplaceContract: this.$marketplaceContract.clone(),
-                to: null,
-                web3: this.$web3,
+                web3: this.$web3
             }
         },
         computed: {
@@ -30,18 +30,17 @@
                 console.log(`Current accounts: ${accounts}`);
                 return accounts[0];
             },
-            async proposeContract() {
+            async proceedContract() {
                 let contractAddress = this.contractAddress;
-                let to = this.to;
-                this.marketplaceContract.methods.propose(contractAddress, to).send({
+                this.contract.methods.proceed().send({
                     from: await this.getAccount(),
                     gas: 100000,
                     gasPrice: '20000000000'
                 }).on('error', function (error) {
                     console.log('Error: ' + error);
                 }).then((transactionHash) => {
-                    console.log(`Proposed ${contractAddress} to ${to} (tx: ${transactionHash})`);
-                });
+                    console.log(`Proceeded ${contractAddress} (tx: ${transactionHash})`);
+                })
             }
         }
     }
