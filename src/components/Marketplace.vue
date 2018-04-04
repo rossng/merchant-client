@@ -57,6 +57,7 @@
         name: "Marketplace",
         beforeMount() {
             this.marketplaceContract.options.address = this.marketplaceAddress;
+            //setInterval(this.updateEvents.bind(self), 5000);
         },
         data() {
             return {
@@ -124,15 +125,22 @@
                     self.setMarketplaceAddress(newContractInstance.options.address);
                     self.marketplaceContract = newContractInstance;
 
-                    self.marketplaceContract.events.Proposed().on('data', evt => {
+                    //setInterval(self.updateEvents.bind(self), 5000);
+
+                    /*self.marketplaceContract.events.Proposed().on('data', evt => {
                         console.log('Event: contract proposed');
                         //self.proposeManifest({id: manifest.id, proposed: true});
-                    });
+                    });*/
                 });
             },
             async getBalance() {
                 this.balanceResult = await this.marketplaceContract.methods.balances_(
                     this.balanceQuery.address, this.balanceQuery.currency).call();
+            },
+            async updateEvents() {
+                this.marketplaceContract.getPastEvents('Proposed')
+                    .on('data', console.log)
+                    .on('error', console.error);
             },
             async doAward() {
                 this.marketplaceContract.methods.award(this.awardQuery.address, this.awardQuery.currency, this.awardQuery.quantity).send({

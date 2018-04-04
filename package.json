@@ -15,7 +15,10 @@
     "dependencies": {
         "bootstrap-vue": "^2.0.0-rc.2",
         "cuid": "^2.1.1",
+        "cyclical-json": "^2.1.4",
         "solc": "^0.4.21",
+        "ts-loader": "3.5.0",
+        "typescript": "^2.8.1",
         "vue": "^2.5.2",
         "vue-router": "^3.0.1",
         "vuex": "^3.0.1",
