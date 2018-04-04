@@ -5,22 +5,7 @@
             <b-form-file v-model="file" :state="haveFile" placeholder="Choose a file..."
                          ref="fileinput" class="mb-3"></b-form-file>
             <b-button @click="clearFiles">Clear</b-button>
-            <b-button @click="reset">Remove all contracts</b-button>
-            <b-button @click="uploadAndDeploy" :disabled="!haveFile">Deploy Contract</b-button>
-            <div class="mt-3">
-                <b-card v-for="manifest in tradeMContractInterfaces" :key="manifest.id" :title="manifest.name"
-                        class="mb-3"
-                        style="max-width: 20rem;">
-                    <p v-if="manifest.proposed">Proposed</p>
-                    <p v-if="manifest.signed">Signed</p>
-                    <p class="card-text">{{(manifest.deployedContract &&
-                        manifest.deployedContract.options.address) || 'Not deployed'}}</p>
-                    <!--<ProposeContract v-if="manifest.deployedContract"
-                                     :contract-address="manifest.deployedContract.options.address"/>
-                    <ProceedContract v-if="manifest.deployedContract"
-                                     :contract-address="manifest.deployedContract.options.address"/>-->
-                </b-card>
-            </div>
+            <b-button @click="uploadPackage" :disabled="!haveFile">Upload Package</b-button>
         </div>
     </div>
 </template>
@@ -29,13 +14,9 @@
     import Vue from 'vue';
     import {mapState, mapMutations, mapGetters} from 'vuex';
     import * as cuid from 'cuid';
-    import ProposeContract from "./ProposeContract";
-    import ProceedContract from "./ProceedContract";
-    import {Web3Utils, MContractInterface, MContractDeployable} from "../assets/web3-utils";
 
     export default Vue.extend({
         name: 'DeployContract',
-        components: {ProceedContract, ProposeContract},
         data() {
             return {
                 file: null,
@@ -82,37 +63,17 @@
                 this.$forceUpdate();
                 console.log('Added delegated contract');
             },
-            reset() {
-                this.resetTradeMContracts();
-                this.resetTradeContracts();
-            },
-            async deployTradePackage(evt) {
+            async parseTradeContract(evt) {
                 console.log(`Deploying contract manifest`);
                 let account = await this.getAccount();
                 let deployableContract = this.web3Utils.parseTradePackage(evt.target.result);
 
                 this.addTradeMContract(deployableContract.contractInterface);
-                let vm = this;
-                let tradeContract = this.web3Utils.makeContractDeployable(deployableContract);
-                tradeContract.deploy({arguments: [this.marketplaceAddress]}).send({
-                    from: account,
-                    gas: 5000000,
-                    gasPrice: '20000000000'
-                }).on('error', console.error).then((contractInstance) => {
-                    vm.addTradeMContractAddress({
-                        id: deployableContract.contractInterface.id,
-                        address: contractInstance.options.address
-                    });
-                    vm.addTradeContract({id: deployableContract.contractInterface.id, contract: contractInstance});
-                    console.log(`New MContract ${deployableContract.contractInterface.name} deployed to ${contractInstance.options.address}`);
-                    // TODO: add delegation
-                    vm.$forceUpdate();
-                });
             },
-            async uploadAndDeploy() {
+            async uploadPackage() {
                 console.log('Uploading contract manifest');
                 let fr = new FileReader();
-                fr.onloadend = this.deployTradePackage;
+                fr.onloadend = this.parseTradeContract;
                 fr.readAsText(this.file);
             }
         }

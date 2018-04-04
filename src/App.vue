@@ -2,6 +2,7 @@
     <div id="app">
         <h1>Merchant Client</h1>
         <DeployContract/>
+        <TradeContractList/>
         <AccountList/>
         <Marketplace/>
     </div>
@@ -11,10 +12,11 @@
     import DeployContract from "./components/DeployContract";
     import AccountList from "./components/AccountList"
     import Marketplace from "./components/Marketplace";
+    import TradeContractList from "./components/TradeContractList";
 
     export default {
         name: 'App',
-        components: {Marketplace, DeployContract, AccountList}
+        components: {TradeContractList, Marketplace, DeployContract, AccountList}
     };
 </script>
 

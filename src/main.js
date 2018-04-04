@@ -63,6 +63,12 @@ const tradeMContractsStore = {
         }
     },
     getters: {
+        getById: (state) => (id) => {
+            return state.tradeMContractInterfaces.find(c => id === c.id);
+        },
+        getAddressById: (state) => (id) => {
+            return state.tradeMContractInstanceAddresses.find(c => id === c.id);
+        }
     },
     actions: {}
 };
