@@ -25,7 +25,7 @@
             }
         },
         computed: {
-            ...mapState('tradeMContracts', ['tradeMContractInterfaces', 'tradeMContractInstanceAddresses']),
+            ...mapState('tradeMContracts', ['tradeMContractDeployables', 'tradeMContractInstanceAddresses']),
             ...mapState('tradeContracts', ['tradeContracts']),
             ...mapState('marketplace', ['marketplaceAddress']),
             haveFile() {
@@ -45,11 +45,6 @@
             clearFiles() {
                 this.$refs.fileinput.reset();
             },
-            async getAccount() {
-                let accounts = await this.web3.eth.getAccounts();
-                console.log(`Current accounts: ${accounts}`);
-                return accounts[0];
-            },
             delegated(evt, self) {
                 console.log(evt);
                 let newDeployedContract = self.$baseContract.clone();
@@ -64,14 +59,13 @@
                 console.log('Added delegated contract');
             },
             async parseTradeContract(evt) {
-                console.log(`Deploying contract manifest`);
-                let account = await this.getAccount();
+                console.log(`Parsing contract package`);
                 let deployableContract = this.web3Utils.parseTradePackage(evt.target.result);
 
-                this.addTradeMContract(deployableContract.contractInterface);
+                this.addTradeMContract(deployableContract);
             },
             async uploadPackage() {
-                console.log('Uploading contract manifest');
+                console.log('Uploading contract package');
                 let fr = new FileReader();
                 fr.onloadend = this.parseTradeContract;
                 fr.readAsText(this.file);

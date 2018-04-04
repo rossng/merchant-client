@@ -3,7 +3,7 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
 import VuexPersistence from 'vuex-persist';
-import CyclicalJSON from 'cyclical-json';
+import VueClipboard from 'vue-clipboard2'
 import App from './App';
 import router from './router';
 import Web3 from 'web3';
@@ -38,6 +38,7 @@ let getWeb3 = new Promise(function (resolve, reject) {
 Vue.config.productionTip = false;
 Vue.use(Vuex);
 Vue.use(BootstrapVue);
+Vue.use(VueClipboard);
 
 const vuexLocal = new VuexPersistence({
     storage: window.localStorage,
@@ -47,16 +48,16 @@ const vuexLocal = new VuexPersistence({
 const tradeMContractsStore = {
     namespaced: true,
     state: {
-        tradeMContractInterfaces: [],
+        tradeMContractDeployables: [],
         tradeMContractInstanceAddresses: []
     },
     mutations: {
         add: (state, payload) => {
-            state.tradeMContractInterfaces.push(payload);
+            state.tradeMContractDeployables.push(payload);
         },
         reset: (state) => {
-            state.tradeMContractInterfaces = [];
-            state.tradeMContractInstanceInterfaces = [];
+            state.tradeMContractDeployables = [];
+            state.tradeMContractInstanceAddresses = [];
         },
         addAddress: (state, payload) => {
             state.tradeMContractInstanceAddresses.push(payload);
@@ -64,7 +65,7 @@ const tradeMContractsStore = {
     },
     getters: {
         getById: (state) => (id) => {
-            return state.tradeMContractInterfaces.find(c => id === c.id);
+            return state.tradeMContractDeployables.find(c => id === c.id);
         },
         getAddressById: (state) => (id) => {
             return state.tradeMContractInstanceAddresses.find(c => id === c.id);

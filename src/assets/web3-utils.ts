@@ -1,6 +1,7 @@
 import {Contract, ABIDefinition} from 'web3/types';
 import Web3 from 'web3/index'
 import * as cuid from 'cuid';
+import {MarketplaceAbi, MarketplaceBin} from "./static-contracts";
 
 /** Represents a contract with ABI only that has been deployed. */
 export class MContractInstanceInterface {
@@ -21,6 +22,10 @@ export class MContractDeployable {
 
 export class TradePackage {
     public constructor(public name: string, public bin: string, public abi: ABIDefinition[]) {}
+}
+
+export class ContractDetails {
+    public constructor(public counterparty: string, public holder: string, public signed: boolean) {}
 }
 
 
@@ -44,5 +49,15 @@ export class Web3Utils {
             contractInterface: {id: cuid(), name: contractPackage.name, abi: contractPackage.abi},
             bin: contractPackage.bin
         };
+    }
+
+    public getMarketplaceContract(address: string): Contract {
+        let c = new this.web3.eth.Contract(MarketplaceAbi, address);
+        c.options.data = MarketplaceBin;
+        return c;
+    }
+
+    public async queryMarketplaceContract(marketplace: Contract, contractAddress: string): Promise<ContractDetails> {
+        return await marketplace.methods.contracts_(contractAddress).call();
     }
 }

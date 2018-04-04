@@ -13,7 +13,7 @@
         beforeMount() {
             this.marketplaceContract.options.address = this.marketplaceAddress;
         },
-        props: ['contractAddress'],
+        props: ['contract-id'],
         data() {
             return {
                 marketplaceContract: this.$marketplaceContract.clone(),

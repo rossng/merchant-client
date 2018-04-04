@@ -5,8 +5,8 @@
         <b-button @click="reset">Remove all contracts</b-button>
 
         <b-card-group deck class="mt-3">
-            <TradeContract v-for="contract in tradeMContractInterfaces" :key="contract.id"
-                           :contract-id="contract.id"></TradeContract>
+            <TradeContract v-for="contract in tradeMContractDeployables" :key="contract.id"
+                           :contract-id="contract.contractInterface.id"></TradeContract>
         </b-card-group>
     </div>
 </template>
@@ -26,7 +26,7 @@
             }
         },
         computed: {
-            ...mapState('tradeMContracts', ['tradeMContractInterfaces', 'tradeMContractInstanceAddresses']),
+            ...mapState('tradeMContracts', ['tradeMContractDeployables', 'tradeMContractInstanceAddresses']),
             ...mapState('tradeContracts', ['tradeContracts']),
             ...mapState('marketplace', ['marketplaceAddress'])
         },
