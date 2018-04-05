@@ -76,20 +76,26 @@ contract BaseContract {
     event Delegated(BaseContract to);
     Marketplace public marketplace_;
     address public owner_;
+    bool alive = true;
 
     function BaseContract(Marketplace marketplace) public {
         marketplace_ = marketplace;
         owner_ = msg.sender;
     }
 
-    function proceed() public;
+    function proceed() public whenAlive;
 
-    function receive(Marketplace.Commodity commodity, uint quantity) internal {
+    function receive(Marketplace.Commodity commodity, uint quantity) internal whenAlive {
         marketplace_.receive(commodity, quantity);
     }
 
-    function kill() internal {
-        selfdestruct(marketplace_);
+    function kill() internal whenAlive {
+        alive = false;
+    }
+
+    modifier whenAlive {
+        require(alive);
+        _;
     }
 }
 

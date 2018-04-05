@@ -13,12 +13,12 @@
     import DeployContract from "./DeployContract";
     import ProposeContract from "./ProposeContract";
     import SignContract from "./SignContract"
-    //import ProceedContract from "./ProceedContract";
+    import ProceedContract from "./ProceedContract";
     //import {Web3Utils, MContractInterface, MContractDeployable} from "../assets/web3-utils";
 
     export default {
         name: 'TradeContract',
-        components: {ProposeContract, DeployContract, SignContract},
+        components: {ProposeContract, DeployContract, SignContract, ProceedContract},
         props: ['contract-id'],
         data() {
             return {

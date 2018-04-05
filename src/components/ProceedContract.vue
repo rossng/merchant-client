@@ -1,5 +1,5 @@
 <template>
-    <div id="proceed-contract">
+    <div class="proceed-contract" v-if="isSigned">
         <b-button @click="proceedContract" class="mb-3">Proceed</b-button>
     </div>
 </template>
@@ -8,22 +8,31 @@
     import {mapState, mapMutations} from 'vuex';
 
     export default {
-        name: "ProceedContract",
+        name: 'ProceedContract',
         beforeMount() {
-            this.marketplaceContract.options.address = this.marketplaceAddress;
-            this.contract.options.address = this.contractAddress;
+            window.setInterval(this.refreshSignedStatus.bind(this), 4000);
         },
-        props: ['contractAddress'],
+        props: ['contract-id'],
         data() {
             return {
-                contract: this.$baseContract.clone(),
-                marketplaceContract: this.$marketplaceContract.clone(),
-                web3: this.$web3
+                web3: this.$web3,
+                web3Utils: this.$web3Utils
             }
         },
         computed: {
             ...mapState('marketplace', ['marketplaceAddress']),
-            ...mapState('accounts', ['selectedAccount'])
+            ...mapState('accounts', ['selectedAccount']),
+            tradeMContractAddress() {
+                let instance = this.tradeMContractInstances.find((c) => this.contractId === c.id);
+                if (instance) {
+                    return instance.address;
+                } else {
+                    return null;
+                }
+            },
+            isSigned() {
+                return this.contractStatus !== null && this.contractStatus.signed;
+            }
         },
         methods: {
             async proceedContract() {
@@ -37,6 +46,13 @@
                 }).then((transactionHash) => {
                     console.log(`Proceeded ${contractAddress} (tx: ${transactionHash})`);
                 })
+            },
+            async refreshSignedStatus() {
+                if (this.tradeMContractAddress === null) {
+                    this.contractStatus = null;
+                    return;
+                }
+                this.contractStatus = await this.marketplaceContract().methods.contracts_(this.tradeMContractAddress).call();
             }
         }
     }
