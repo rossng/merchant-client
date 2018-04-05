@@ -23,17 +23,13 @@
         },
         computed: {
             ...mapState('marketplace', ['marketplaceAddress']),
+            ...mapState('accounts', ['selectedAccount'])
         },
         methods: {
-            async getAccount() {
-                let accounts = await this.web3.eth.getAccounts();
-                console.log(`Current accounts: ${accounts}`);
-                return accounts[0];
-            },
             async proceedContract() {
                 let contractAddress = this.contractAddress;
                 this.contract.methods.proceed().send({
-                    from: await this.getAccount(),
+                    from: this.selectedAccount,
                     gas: 100000,
                     gasPrice: '20000000000'
                 }).on('error', function (error) {

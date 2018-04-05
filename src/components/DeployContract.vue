@@ -1,92 +1,91 @@
 <template>
-    <div id="deploy-contract">
-        <h2>Deploy Contract</h2>
-        <div>
-            <b-form-file v-model="file" :state="haveFile" placeholder="Choose a file..."
-                         ref="fileinput" class="mb-3"></b-form-file>
-            <b-button @click="clearFiles">Clear</b-button>
-            <b-button @click="uploadPackage" :disabled="!haveFile">Upload Package</b-button>
+    <div class="deploy-contract">
+        <b-button v-if="!tradeMContractAddress" @click="deployTradeMContract">Deploy</b-button>
+        <div v-else>
+            <b-button v-clipboard:copy="tradeMContractAddress">
+                Deployed
+                <b-badge variant="light">{{tradeMContractAddress}}</b-badge>
+            </b-button>
+            <b-badge class="mt-2">Owned by {{tradeMContractOwner}}</b-badge>
         </div>
     </div>
 </template>
 
 <script>
-    import Vue from 'vue';
-    import {mapState, mapMutations, mapGetters} from 'vuex';
-    import * as cuid from 'cuid';
+    import {mapState, mapMutations} from 'vuex';
 
-    export default Vue.extend({
+    export default {
         name: 'DeployContract',
+        beforeMount() {
+        },
+        props: ['contract-id'],
         data() {
             return {
-                file: null,
                 web3: this.$web3,
                 web3Utils: this.$web3Utils
             }
         },
         computed: {
-            ...mapState('tradeMContracts', ['tradeMContractDeployables', 'tradeMContractInstanceAddresses']),
-            ...mapState('tradeContracts', ['tradeContracts']),
+            ...mapState('tradeMContracts', ['tradeMContractDeployables', 'tradeMContractInstances']),
             ...mapState('marketplace', ['marketplaceAddress']),
-            haveFile() {
-                return Boolean(this.file);
+            ...mapState('accounts', ['selectedAccount']),
+            tradeMContractAddress() {
+                let instance = this.tradeMContractInstances.find((c) => this.contractId === c.id);
+                if (instance) {
+                    return instance.address;
+                } else {
+                    return null;
+                }
+            },
+            tradeMContractOwner() {
+                let instance = this.tradeMContractInstances.find((c) => this.contractId === c.id);
+                if (instance) {
+                    return instance.owner;
+                } else {
+                    return null;
+                }
+            },
+            tradeMContractDeployable() {
+                return this.tradeMContractDeployables.find((c) => this.contractId === c.contractInterface.id);
             }
         },
         methods: {
-            ...mapMutations('tradeMContracts', {
-                addTradeMContract: 'add',
-                resetTradeMContracts: 'reset',
-                addTradeMContractAddress: 'addAddress'
-            }),
-            ...mapMutations('tradeContracts', {
-                addTradeContract: 'add',
-                resetTradeContracts: 'reset',
-            }),
-            clearFiles() {
-                this.$refs.fileinput.reset();
+            ...mapMutations('tradeMContracts', {addTradeMContractInstance: 'addInstance'}),
+            ...mapMutations('tradeContracts', {addTradeContract: 'add'}),
+            marketplaceContract() {
+                return this.web3Utils.getMarketplaceContract(this.marketplaceAddress);
             },
-            delegated(evt, self) {
-                console.log(evt);
-                let newDeployedContract = self.$baseContract.clone();
-                newDeployedContract.options.address = evt.returnValues.to;
-                self.addMContractInterface({
-                    id: cuid(),
-                    name: cuid(),
-                    abi: self.$baseContract.abi,
-                    deployedContract: newDeployedContract
+            async deployTradeMContract() {
+                let account = this.selectedAccount;
+                let vm = this;
+                let tradeMContract = this.tradeMContractDeployable;
+                let tradeContract = this.web3Utils.makeContractDeployable(tradeMContract);
+                console.log(`Starting deployment of ${tradeMContract.contractInterface.id}`);
+                tradeContract.deploy({
+                    data: tradeContract.options.data,
+                    arguments: [this.marketplaceAddress]
+                }).send({
+                    from: account,
+                    gas: 5000000,
+                    gasPrice: '20000000000'
+                }).on('error', (err) => {
+                    console.error(err);
+                }).then((contractInstance) => {
+                    console.log(`New MContract ${tradeMContract.contractInterface.name} deployed to ${contractInstance.options.address}`);
+                    vm.addTradeMContractInstance({
+                        id: tradeMContract.contractInterface.id,
+                        owner: account,
+                        address: contractInstance.options.address
+                    });
+                    vm.addTradeContract({id: tradeMContract.contractInterface.id, contract: contractInstance});
+                    // TODO: add delegation
+                    vm.$forceUpdate();
                 });
-                this.$forceUpdate();
-                console.log('Added delegated contract');
-            },
-            async parseTradeContract(evt) {
-                console.log(`Parsing contract package`);
-                let deployableContract = this.web3Utils.parseTradePackage(evt.target.result);
-
-                this.addTradeMContract(deployableContract);
-            },
-            async uploadPackage() {
-                console.log('Uploading contract package');
-                let fr = new FileReader();
-                fr.onloadend = this.parseTradeContract;
-                fr.readAsText(this.file);
             }
         }
-    });
+    }
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-    h1, h2 {
-        font-weight: normal;
-    }
 
-    a {
-        color: #42b983;
-    }
-
-    #deploy-contract {
-        border: 1px solid grey;
-        margin: 10px;
-        padding: 10px;
-    }
 </style>

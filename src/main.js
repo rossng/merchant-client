@@ -49,7 +49,7 @@ const tradeMContractsStore = {
     namespaced: true,
     state: {
         tradeMContractDeployables: [],
-        tradeMContractInstanceAddresses: []
+        tradeMContractInstances: []
     },
     mutations: {
         add: (state, payload) => {
@@ -57,10 +57,10 @@ const tradeMContractsStore = {
         },
         reset: (state) => {
             state.tradeMContractDeployables = [];
-            state.tradeMContractInstanceAddresses = [];
+            state.tradeMContractInstances = [];
         },
-        addAddress: (state, payload) => {
-            state.tradeMContractInstanceAddresses.push(payload);
+        addInstance: (state, payload) => {
+            state.tradeMContractInstances.push(payload);
         }
     },
     getters: {
@@ -68,7 +68,7 @@ const tradeMContractsStore = {
             return state.tradeMContractDeployables.find(c => id === c.id);
         },
         getAddressById: (state) => (id) => {
-            return state.tradeMContractInstanceAddresses.find(c => id === c.id);
+            return state.tradeMContractInstances.find(c => id === c.id);
         }
     },
     actions: {}
@@ -105,11 +105,15 @@ const accountsStore = {
     namespaced: true,
     state: {
         accounts: [],
+        selectedAccount: null
     },
     mutations: {
         updateAccounts: (state, payload) => {
             state.accounts = payload;
         },
+        updateSelectedAccount: (state, payload) => {
+            state.selectedAccount = payload;
+        }
     }
 };
 

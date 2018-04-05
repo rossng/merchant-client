@@ -89,20 +89,16 @@
             }
         },
         computed: {
-            ...mapState('marketplace', ['marketplaceAddress'])
+            ...mapState('marketplace', ['marketplaceAddress']),
+            ...mapState('accounts', ['selectedAccount'])
         },
         methods: {
             ...mapMutations('marketplace', ['setMarketplaceAddress']),
             marketplaceContract() {
                 return this.web3Utils.getMarketplaceContract(this.marketplaceAddress);
             },
-            async getAccount() {
-                let accounts = await this.web3.eth.getAccounts();
-                console.log(`Current accounts: ${accounts}`);
-                return accounts[0];
-            },
             async deployMarketplace() {
-                let account = await this.getAccount();
+                let account = this.selectedAccount;
                 console.log(`Deploying marketplace from ${account}`);
                 let self = this;
 
@@ -142,8 +138,9 @@
                     .on('error', console.error);
             },
             async doAward() {
+                let account = this.selectedAccount;
                 this.marketplaceContract().methods.award(this.awardQuery.address, this.awardQuery.currency, this.awardQuery.quantity).send({
-                    from: await this.getAccount(),
+                    from: account,
                     gas: 100000,
                     gasPrice: '20000000000'
                 }).on('error', function (error) {
@@ -156,9 +153,10 @@
                 this.inspectResult = await this.marketplaceContract().methods.contracts_(this.inspectQuery.address).call();
             },
             async doSign() {
+                let account = this.selectedAccount;
                 let contractAddress = this.signQuery.address;
                 this.marketplaceContract().methods.sign(contractAddress).send({
-                    from: await this.getAccount(),
+                    from: account,
                     gas: 100000,
                     gasPRice: '20000000000'
                 }).on('error', function (error) {

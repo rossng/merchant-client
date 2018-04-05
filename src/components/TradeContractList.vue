@@ -26,7 +26,7 @@
             }
         },
         computed: {
-            ...mapState('tradeMContracts', ['tradeMContractDeployables', 'tradeMContractInstanceAddresses']),
+            ...mapState('tradeMContracts', ['tradeMContractDeployables', 'tradeMContractInstances']),
             ...mapState('tradeContracts', ['tradeContracts']),
             ...mapState('marketplace', ['marketplaceAddress'])
         },
@@ -34,7 +34,7 @@
             ...mapMutations('tradeMContracts', {
                 addTradeMContract: 'add',
                 resetTradeMContracts: 'reset',
-                addTradeMContractAddress: 'addAddress'
+                addTradeMContractInstance: 'addInstance'
             }),
             ...mapMutations('tradeContracts', {
                 addTradeContract: 'add',

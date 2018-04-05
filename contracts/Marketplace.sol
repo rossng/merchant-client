@@ -29,8 +29,9 @@ contract Marketplace {
         return contracts_[contractAddress].signed;
     }
 
-    function propose(address contractAddress, address to) public {
-        require(!contracts_[contractAddress].signed);
+    function propose(BaseContract contractAddress, address to) public {
+        require(contractAddress.owner_() == msg.sender); // is being requested by owner of contract
+        require(!contracts_[contractAddress].signed); // has not already been signed
         contracts_[contractAddress] = ContractMetadata(msg.sender, to, false);
         emit Proposed(contractAddress, to);
     }
@@ -74,9 +75,11 @@ contract Marketplace {
 contract BaseContract {
     event Delegated(BaseContract to);
     Marketplace public marketplace_;
+    address public owner_;
 
     function BaseContract(Marketplace marketplace) public {
         marketplace_ = marketplace;
+        owner_ = msg.sender;
     }
 
     function proceed() public;

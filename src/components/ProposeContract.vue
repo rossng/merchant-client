@@ -1,43 +1,54 @@
 <template>
-    <b-form inline id="propose-contract" class="mt-3">
-        <b-form-input v-model="toAddress" type="text" placeholder="To address" class="mr-2"></b-form-input>
-        <b-button v-if="marketplaceAddress" @click="proposeContract">Propose</b-button>
-        <div v-else v-b-tooltip.hover title="No marketplace deployed">
-            <b-button disabled>Propose</b-button>
-        </div>
-    </b-form>
+    <div class="propose-contract">
+        <b-form inline id="propose-contract" class="mt-3">
+            <b-form-input v-model="toAddress" type="text" placeholder="To address" class="mr-2"></b-form-input>
+            <b-button v-if="marketplaceAddress" @click="proposeContract">Propose</b-button>
+            <div v-else v-b-tooltip.hover title="No marketplace deployed">
+                <b-button disabled>Propose</b-button>
+            </div>
+        </b-form>
+        <b-badge v-if="isProposed" class="mt-3">Proposed to {{contractStatus.holder}}</b-badge>
+    </div>
 </template>
 
 <script>
     import {mapState, mapMutations} from 'vuex';
 
     export default {
-        name: "ProposeContract",
+        name: 'ProposeContract',
         beforeMount() {
+            window.setInterval(this.refreshProposalStatus.bind(this), 4000);
         },
         props: ['contract-id'],
         data() {
             return {
+                contractStatus: null,
                 toAddress: null,
                 web3: this.$web3,
                 web3Utils: this.$web3Utils
             }
         },
         computed: {
-            ...mapState('tradeMContracts', ['tradeMContractInstanceAddresses']),
+            ...mapState('tradeMContracts', ['tradeMContractInstances']),
             ...mapState('marketplace', ['marketplaceAddress']),
+            ...mapState('accounts', ['selectedAccount']),
             tradeMContractAddress() {
-                return this.tradeMContractInstanceAddresses.find((c) => this.contractId === c.id).address;
+                let instance = this.tradeMContractInstances.find((c) => this.contractId === c.id);
+                if (instance) {
+                    return instance.address;
+                } else {
+                    return null;
+                }
+            },
+            isProposed() {
+                return this.contractStatus !== null
+                    && this.contractStatus.holder !== '0x0000000000000000000000000000000000000000'
+                    && this.contractStatus.counterparty !== '0x0000000000000000000000000000000000000000';
             }
         },
         methods: {
             marketplaceContract() {
                 return this.web3Utils.getMarketplaceContract(this.marketplaceAddress);
-            },
-            async getAccount() {
-                let accounts = await this.web3.eth.getAccounts();
-                console.log(`Current accounts: ${accounts}`);
-                return accounts[0];
             },
             async proposeContract() {
                 let marketplace = this.marketplaceContract();
@@ -48,7 +59,7 @@
                 let contractAddress = this.tradeMContractAddress;
                 let toAddress = this.toAddress;
                 marketplace.methods.propose(contractAddress, toAddress).send({
-                    from: await this.getAccount(),
+                    from: this.selectedAccount,
                     gas: 100000,
                     gasPrice: '20000000000'
                 }).on('error', (err) => {
@@ -56,6 +67,13 @@
                 }).then((txHash) => {
                     console.log(`Proposed ${contractAddress} to ${toAddress}`);
                 });
+            },
+            async refreshProposalStatus() {
+                if (this.tradeMContractAddress === null) {
+                    this.contractStatus = null;
+                    return;
+                }
+                this.contractStatus = await this.marketplaceContract().methods.contracts_(this.tradeMContractAddress).call();
             }
         }
     }
