@@ -49,7 +49,8 @@ const tradeMContractsStore = {
     namespaced: true,
     state: {
         tradeMContractDeployables: [],
-        tradeMContractInstances: []
+        tradeMContractInstances: [],
+        tradeMContractInstanceKills: []
     },
     mutations: {
         add: (state, payload) => {
@@ -61,6 +62,9 @@ const tradeMContractsStore = {
         },
         addInstance: (state, payload) => {
             state.tradeMContractInstances.push(payload);
+        },
+        killInstance: (state, payload) => {
+            state.tradeMContractInstanceKills.push(payload);
         }
     },
     getters: {

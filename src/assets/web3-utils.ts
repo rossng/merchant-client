@@ -58,6 +58,10 @@ export class Web3Utils {
         return c;
     }
 
+    public makeContractInstance(contractInterface: MContractInterface, address: string): Contract {
+        return new this.web3.eth.Contract(contractInterface.abi, address);
+    }
+
     public async queryMarketplaceContract(marketplace: Contract, contractAddress: string): Promise<ContractDetails> {
         return await marketplace.methods.contracts_(contractAddress).call();
     }

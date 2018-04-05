@@ -114,6 +114,9 @@ var Web3Utils = /** @class */ (function () {
         c.options.address = address;
         return c;
     };
+    Web3Utils.prototype.makeContractInstance = function (contractInterface, address) {
+        return new this.web3.eth.Contract(contractInterface.abi, address);
+    };
     Web3Utils.prototype.queryMarketplaceContract = function (marketplace, contractAddress) {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {

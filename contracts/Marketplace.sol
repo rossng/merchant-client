@@ -74,27 +74,29 @@ contract Marketplace {
 
 contract BaseContract {
     event Delegated(BaseContract to);
+    event Killed();
     Marketplace public marketplace_;
     address public owner_;
-    bool alive = true;
+    bool public alive_ = true;
 
     function BaseContract(Marketplace marketplace) public {
         marketplace_ = marketplace;
         owner_ = msg.sender;
     }
 
-    function proceed() public whenAlive;
+    function proceed() public;
 
     function receive(Marketplace.Commodity commodity, uint quantity) internal whenAlive {
         marketplace_.receive(commodity, quantity);
     }
 
     function kill() internal whenAlive {
-        alive = false;
+        alive_ = false;
+        emit Killed();
     }
 
     modifier whenAlive {
-        require(alive);
+        require(alive_);
         _;
     }
 }
@@ -114,7 +116,7 @@ contract One is BaseContract {
         commodity_ = commodity;
     }
 
-    function proceed() public {
+    function proceed() public whenAlive {
         marketplace_.receive(commodity_, 1);
         kill();
     }
@@ -124,7 +126,7 @@ contract One is BaseContract {
 contract MyContract is BaseContract {
     function MyContract(Marketplace marketplace) public BaseContract(marketplace) {}
 
-    function proceed() public {
+    function proceed() public whenAlive {
         require(marketplace_.signed(address(this)));
         One next = new One(marketplace_, Marketplace.Commodity.USD);
         marketplace_.delegate(next);

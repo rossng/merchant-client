@@ -1,6 +1,7 @@
 <template>
     <div class="deploy-contract">
-        <b-button v-if="!tradeMContractAddress" @click="deployTradeMContract" variant="primary" v-b-tooltip.hover.rightbottom
+        <b-button v-if="!tradeMContractAddress" @click="deployTradeMContract" variant="primary"
+                  v-b-tooltip.hover.rightbottom
                   :title="`As ${selectedAccount}`">Deploy
         </b-button>
         <div v-else>
@@ -52,7 +53,10 @@
             }
         },
         methods: {
-            ...mapMutations('tradeMContracts', {addTradeMContractInstance: 'addInstance'}),
+            ...mapMutations('tradeMContracts', {
+                addTradeMContractInstance: 'addInstance',
+                killTradeMContractInstance: 'killInstance'
+            }),
             ...mapMutations('tradeContracts', {addTradeContract: 'add'}),
             marketplaceContract() {
                 return this.web3Utils.getMarketplaceContract(this.marketplaceAddress);
@@ -80,6 +84,12 @@
                         address: contractInstance.options.address
                     });
                     vm.addTradeContract({id: tradeMContract.contractInterface.id, contract: contractInstance});
+                    contractInstance.events.Killed({
+                        fromBlock: 0
+                    }, function (error, event) {
+                        vm.killTradeMContractInstance({id: tradeMContract.contractInterface.id});
+                        console.log(`Killed instance of ${tradeMContract.contractInterface.id} at ${contractInstance.options.address}`);
+                    });
                     // TODO: add delegation
                     vm.$forceUpdate();
                 });

@@ -1,6 +1,6 @@
 <template>
     <div class="sign-contract">
-        <b-form v-if="isProposed" inline class="mt-3">
+        <b-form v-if="isProposed && !isSigned" inline class="mt-3">
             <b-button v-if="isSignable" @click="signContract" variant="primary">Sign</b-button>
             <div v-else v-b-tooltip.hover :title="unsignableReason">
                 <b-button disabled variant="primary">Sign</b-button>
@@ -17,6 +17,7 @@
         name: 'SignContract',
         beforeMount() {
             window.setInterval(this.refreshSigningStatus.bind(this), 4000);
+            this.refreshSigningStatus();
         },
         props: ['contract-id'],
         data() {

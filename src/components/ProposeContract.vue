@@ -18,6 +18,7 @@
         name: 'ProposeContract',
         beforeMount() {
             window.setInterval(this.refreshProposalStatus.bind(this), 4000);
+            this.refreshProposalStatus();
         },
         props: ['contract-id'],
         data() {

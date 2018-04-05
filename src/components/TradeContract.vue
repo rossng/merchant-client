@@ -1,10 +1,12 @@
 <template>
-    <b-card header="Contract" header-tag="header" :footer="contractId" footer-tag="footer"
-            :title="tradeMContractDeployable.contractInterface.name" style="max-width: 30rem;">
+    <b-card :header="isKilled ? 'Completed contract' : 'Alive contract'" header-tag="header" :footer="`id: ${contractId}`" footer-tag="footer"
+            :title="tradeMContractDeployable.contractInterface.name" style="max-width: 30rem;"
+            :bg-variant="isKilled ? 'secondary' : 'default'" :text-variant="isKilled ? 'light' : 'dark'">
 
         <DeployContract :contract-id="contractId"></DeployContract>
         <ProposeContract :contract-id="contractId"></ProposeContract>
         <SignContract :contract-id="contractId"></SignContract>
+        <ProceedContract :contract-id="contractId"></ProceedContract>
     </b-card>
 </template>
 
@@ -14,7 +16,6 @@
     import ProposeContract from "./ProposeContract";
     import SignContract from "./SignContract"
     import ProceedContract from "./ProceedContract";
-    //import {Web3Utils, MContractInterface, MContractDeployable} from "../assets/web3-utils";
 
     export default {
         name: 'TradeContract',
@@ -28,7 +29,7 @@
             }
         },
         computed: {
-            ...mapState('tradeMContracts', ['tradeMContractDeployables', 'tradeMContractInstances']),
+            ...mapState('tradeMContracts', ['tradeMContractDeployables', 'tradeMContractInstances', 'tradeMContractInstanceKills']),
             ...mapState('tradeContracts', ['tradeContracts']),
             ...mapState('marketplace', ['marketplaceAddress']),
             ...mapState('accounts', ['selectedAccount']),
@@ -37,6 +38,9 @@
             },
             tradeMContractDeployable() {
                 return this.tradeMContractDeployables.find((c) => this.contractId === c.contractInterface.id);
+            },
+            isKilled() {
+                return this.tradeMContractInstanceKills.some((c) => this.contractId === c.id);
             }
         },
         methods: {
