@@ -2,11 +2,11 @@
     <div id="marketplace">
         <h2>Marketplace</h2>
         <h3>Marketplace deployment</h3>
-        <!--<b-form-input v-model="newMarketplaceAddress" type="text" class="mb-3"
-                      placeholder="Enter the marketplace address"></b-form-input>
-        <b-button @click="setMarketplaceAddress(newMarketplaceAddress)">Update Marketplace Address</b-button>-->
-        <p>Current marketplace: {{marketplaceAddress}}</p>
-        <b-button @click="deployMarketplace">Redeploy Marketplace</b-button>
+        <b-button @click="deployMarketplace" class="mb-3">Deploy</b-button>
+        <b-button v-if="marketplaceAddress" v-clipboard:copy="marketplaceAddress" class="mb-3">
+            Deployed
+            <b-badge variant="light">{{marketplaceAddress}}</b-badge>
+        </b-button>
 
         <h3>Balance query</h3>
         <b-form inline>
@@ -56,8 +56,6 @@
     export default {
         name: "Marketplace",
         beforeMount() {
-            this.marketplaceContract.options.address = this.marketplaceAddress;
-            //setInterval(this.updateEvents.bind(self), 5000);
         },
         data() {
             return {
@@ -81,21 +79,23 @@
                     address: null
                 },
                 balanceResult: null,
-                marketplaceContract: this.$marketplaceContract.clone(),
-                newMarketplaceAddress: this.marketplaceAddress,
                 awardQuery: {
                     address: null,
                     quantity: null,
                     currency: null
                 },
                 web3: this.$web3,
+                web3Utils: this.$web3Utils
             }
         },
         computed: {
-            ...mapState('marketplace', ['marketplaceAddress']),
+            ...mapState('marketplace', ['marketplaceAddress'])
         },
         methods: {
             ...mapMutations('marketplace', ['setMarketplaceAddress']),
+            marketplaceContract() {
+                return this.web3Utils.getMarketplaceContract(this.marketplaceAddress);
+            },
             async getAccount() {
                 let accounts = await this.web3.eth.getAccounts();
                 console.log(`Current accounts: ${accounts}`);
@@ -106,7 +106,7 @@
                 console.log(`Deploying marketplace from ${account}`);
                 let self = this;
 
-                this.marketplaceContract.deploy({
+                this.marketplaceContract().deploy({
                     arguments: [],
                 }).send({
                     from: account,
@@ -123,8 +123,7 @@
                 }).then((newContractInstance) => {
                     console.log(`New marketplace instance address: ${newContractInstance.options.address}`); // instance with the new contract address
                     self.setMarketplaceAddress(newContractInstance.options.address);
-                    self.marketplaceContract = newContractInstance;
-
+                    self.$forceUpdate();
                     //setInterval(self.updateEvents.bind(self), 5000);
 
                     /*self.marketplaceContract.events.Proposed().on('data', evt => {
@@ -134,16 +133,16 @@
                 });
             },
             async getBalance() {
-                this.balanceResult = await this.marketplaceContract.methods.balances_(
+                this.balanceResult = await this.marketplaceContract().methods.balances_(
                     this.balanceQuery.address, this.balanceQuery.currency).call();
             },
             async updateEvents() {
-                this.marketplaceContract.getPastEvents('Proposed')
+                this.marketplaceContract().getPastEvents('Proposed')
                     .on('data', console.log)
                     .on('error', console.error);
             },
             async doAward() {
-                this.marketplaceContract.methods.award(this.awardQuery.address, this.awardQuery.currency, this.awardQuery.quantity).send({
+                this.marketplaceContract().methods.award(this.awardQuery.address, this.awardQuery.currency, this.awardQuery.quantity).send({
                     from: await this.getAccount(),
                     gas: 100000,
                     gasPrice: '20000000000'
@@ -154,11 +153,11 @@
                 });
             },
             async doInspect() {
-                this.inspectResult = await this.marketplaceContract.methods.contracts_(this.inspectQuery.address).call();
+                this.inspectResult = await this.marketplaceContract().methods.contracts_(this.inspectQuery.address).call();
             },
             async doSign() {
                 let contractAddress = this.signQuery.address;
-                this.marketplaceContract.methods.sign(contractAddress).send({
+                this.marketplaceContract().methods.sign(contractAddress).send({
                     from: await this.getAccount(),
                     gas: 100000,
                     gasPRice: '20000000000'

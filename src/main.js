@@ -127,8 +127,6 @@ const store = new Vuex.Store({
 getWeb3.then((result) => {
     Vue.prototype.$web3 = result.web3;
     Vue.prototype.$web3Utils = new Web3Utils(result.web3);
-    Vue.prototype.$marketplaceContract = new result.web3.eth.Contract(MarketplaceAbi);
-    Vue.prototype.$marketplaceContract.options.data = MarketplaceBin;
     Vue.prototype.$baseContract = new result.web3.eth.Contract(BaseContractAbi);
 
     Window.app = new Vue({

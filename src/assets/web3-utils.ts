@@ -52,8 +52,9 @@ export class Web3Utils {
     }
 
     public getMarketplaceContract(address: string): Contract {
-        let c = new this.web3.eth.Contract(MarketplaceAbi, address);
+        let c = new this.web3.eth.Contract(MarketplaceAbi);
         c.options.data = MarketplaceBin;
+        c.options.address = address;
         return c;
     }
 

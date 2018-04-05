@@ -109,8 +109,9 @@ var Web3Utils = /** @class */ (function () {
         };
     };
     Web3Utils.prototype.getMarketplaceContract = function (address) {
-        var c = new this.web3.eth.Contract(MarketplaceAbi, address);
+        var c = new this.web3.eth.Contract(MarketplaceAbi);
         c.options.data = MarketplaceBin;
+        c.options.address = address;
         return c;
     };
     Web3Utils.prototype.queryMarketplaceContract = function (marketplace, contractAddress) {

@@ -1,8 +1,11 @@
 <template>
-    <div id="propose-contract">
-        <b-form-input v-model="to" type="text" placeholder="To address" class="mb-3"></b-form-input>
-        <b-button @click="proposeContract" class="mb-3">Propose</b-button>
-    </div>
+    <b-form inline id="propose-contract" class="mt-3">
+        <b-form-input v-model="toAddress" type="text" placeholder="To address" class="mr-2"></b-form-input>
+        <b-button v-if="marketplaceAddress" @click="proposeContract">Propose</b-button>
+        <div v-else v-b-tooltip.hover title="No marketplace deployed">
+            <b-button disabled>Propose</b-button>
+        </div>
+    </b-form>
 </template>
 
 <script>
@@ -11,36 +14,47 @@
     export default {
         name: "ProposeContract",
         beforeMount() {
-            this.marketplaceContract.options.address = this.marketplaceAddress;
         },
         props: ['contract-id'],
         data() {
             return {
-                marketplaceContract: this.$marketplaceContract.clone(),
-                to: null,
+                toAddress: null,
                 web3: this.$web3,
+                web3Utils: this.$web3Utils
             }
         },
         computed: {
+            ...mapState('tradeMContracts', ['tradeMContractInstanceAddresses']),
             ...mapState('marketplace', ['marketplaceAddress']),
+            tradeMContractAddress() {
+                return this.tradeMContractInstanceAddresses.find((c) => this.contractId === c.id).address;
+            }
         },
         methods: {
+            marketplaceContract() {
+                return this.web3Utils.getMarketplaceContract(this.marketplaceAddress);
+            },
             async getAccount() {
                 let accounts = await this.web3.eth.getAccounts();
                 console.log(`Current accounts: ${accounts}`);
                 return accounts[0];
             },
             async proposeContract() {
-                let contractAddress = this.contractAddress;
-                let to = this.to;
-                this.marketplaceContract.methods.propose(contractAddress, to).send({
+                let marketplace = this.marketplaceContract();
+                if (marketplace.options.address === null) {
+                    console.error('Marketplace is not currently deployed');
+                    return;
+                }
+                let contractAddress = this.tradeMContractAddress;
+                let toAddress = this.toAddress;
+                marketplace.methods.propose(contractAddress, toAddress).send({
                     from: await this.getAccount(),
                     gas: 100000,
                     gasPrice: '20000000000'
-                }).on('error', function (error) {
-                    console.log('Error: ' + error);
-                }).then((transactionHash) => {
-                    console.log(`Proposed ${contractAddress} to ${to} (tx: ${transactionHash})`);
+                }).on('error', (err) => {
+                    console.log('Error proposing contract: ' + err);
+                }).then((txHash) => {
+                    console.log(`Proposed ${contractAddress} to ${toAddress}`);
                 });
             }
         }

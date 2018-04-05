@@ -3,9 +3,9 @@
             :title="tradeMContractDeployable.contractInterface.name" style="max-width: 30rem;">
 
         <b-button v-if="!tradeMContractAddress" @click="deployTradeMContract">Deploy</b-button>
-        <b-button v-else v-clipboard:copy="tradeMContractAddress.address">
+        <b-button v-else v-clipboard:copy="tradeMContractAddress">
             Deployed
-            <b-badge variant="light">{{tradeMContractAddress.address}}</b-badge>
+            <b-badge variant="light">{{tradeMContractAddress}}</b-badge>
         </b-button>
 
         <ProposeContract :contract-id="this.contractId"></ProposeContract>
@@ -48,7 +48,7 @@
                 return this.tradeMContractDeployables.find((c) => this.contractId === c.contractInterface.id);
             },
             tradeMContractAddress() {
-                return this.tradeMContractInstanceAddresses.find((c) => this.contractId === c.id);
+                return this.tradeMContractInstanceAddresses.find((c) => this.contractId === c.id).address;
             }
         },
         methods: {
