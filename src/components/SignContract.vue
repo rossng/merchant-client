@@ -1,13 +1,12 @@
 <template>
-    <div class="propose-contract">
-        <b-form v-if="isDeployed && !isSigned && !isProposed" inline class="mt-3">
-            <b-form-input v-model="toAddress" type="text" placeholder="To address" class="mr-2"></b-form-input>
-            <b-button v-if="marketplaceAddress" @click="proposeContract" variant="primary">Propose</b-button>
-            <div v-else v-b-tooltip.hover title="No marketplace deployed">
-                <b-button disabled variant="primary">Propose</b-button>
+    <div class="sign-contract">
+        <b-form v-if="isProposed" inline class="mt-3">
+            <b-button v-if="isSignable" @click="signContract" variant="primary">Sign</b-button>
+            <div v-else v-b-tooltip.hover :title="unsignableReason">
+                <b-button disabled variant="primary">Sign</b-button>
             </div>
         </b-form>
-        <b-badge v-if="isProposed" class="mt-3">Proposed to {{contractStatus.holder}}</b-badge>
+        <b-badge v-if="isSigned" class="mt-3">Signed</b-badge>
     </div>
 </template>
 
@@ -15,9 +14,9 @@
     import {mapState, mapMutations} from 'vuex';
 
     export default {
-        name: 'ProposeContract',
+        name: 'SignContract',
         beforeMount() {
-            window.setInterval(this.refreshProposalStatus.bind(this), 4000);
+            window.setInterval(this.refreshSigningStatus.bind(this), 4000);
         },
         props: ['contract-id'],
         data() {
@@ -40,9 +39,6 @@
                     return null;
                 }
             },
-            isDeployed() {
-                return this.tradeMContractAddress !== null;
-            },
             isProposed() {
                 return this.contractStatus !== null
                     && this.contractStatus.holder !== '0x0000000000000000000000000000000000000000'
@@ -50,13 +46,27 @@
             },
             isSigned() {
                 return this.contractStatus !== null && this.contractStatus.signed;
+            },
+            isSignable() {
+                return this.contractStatus !== null && !this.contractStatus.signed && (this.selectedAccount === this.contractStatus.holder) && this.marketplaceAddress !== null
+            },
+            unsignableReason() {
+                if (this.isSigned) {
+                    return 'Already signed';
+                } else if (this.contractStatus !== null && this.selectedAccount !== this.contractStatus.holder) {
+                    return 'Not proposed to you';
+                } else if (this.marketplaceAddress === null) {
+                    return 'No marketplace deployed'
+                } else {
+                    return 'Unknown reason';
+                }
             }
         },
         methods: {
             marketplaceContract() {
                 return this.web3Utils.getMarketplaceContract(this.marketplaceAddress);
             },
-            async proposeContract() {
+            async signContract() {
                 let marketplace = this.marketplaceContract();
                 if (marketplace.options.address === null) {
                     console.error('Marketplace is not currently deployed');
@@ -64,17 +74,17 @@
                 }
                 let contractAddress = this.tradeMContractAddress;
                 let toAddress = this.toAddress;
-                marketplace.methods.propose(contractAddress, toAddress).send({
+                marketplace.methods.sign(contractAddress).send({
                     from: this.selectedAccount,
                     gas: 100000,
                     gasPrice: '20000000000'
                 }).on('error', (err) => {
-                    console.log('Error proposing contract: ' + err);
+                    console.log('Error signing contract: ' + err);
                 }).then((txHash) => {
-                    console.log(`Proposed ${contractAddress} to ${toAddress}`);
+                    console.log(`Signed ${contractAddress}`);
                 });
             },
-            async refreshProposalStatus() {
+            async refreshSigningStatus() {
                 if (this.tradeMContractAddress === null) {
                     this.contractStatus = null;
                     return;

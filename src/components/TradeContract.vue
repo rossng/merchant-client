@@ -4,6 +4,7 @@
 
         <DeployContract :contract-id="contractId"></DeployContract>
         <ProposeContract :contract-id="contractId"></ProposeContract>
+        <SignContract :contract-id="contractId"></SignContract>
     </b-card>
 </template>
 
@@ -11,12 +12,13 @@
     import {mapState, mapMutations, mapGetters} from 'vuex';
     import DeployContract from "./DeployContract";
     import ProposeContract from "./ProposeContract";
+    import SignContract from "./SignContract"
     //import ProceedContract from "./ProceedContract";
     //import {Web3Utils, MContractInterface, MContractDeployable} from "../assets/web3-utils";
 
     export default {
         name: 'TradeContract',
-        components: {ProposeContract, DeployContract},
+        components: {ProposeContract, DeployContract, SignContract},
         props: ['contract-id'],
         data() {
             return {

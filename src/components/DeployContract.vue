@@ -1,8 +1,10 @@
 <template>
     <div class="deploy-contract">
-        <b-button v-if="!tradeMContractAddress" @click="deployTradeMContract">Deploy</b-button>
+        <b-button v-if="!tradeMContractAddress" @click="deployTradeMContract" variant="primary" v-b-tooltip.hover.rightbottom
+                  :title="`As ${selectedAccount}`">Deploy
+        </b-button>
         <div v-else>
-            <b-button v-clipboard:copy="tradeMContractAddress">
+            <b-button v-clipboard:copy="tradeMContractAddress" class="mb-2">
                 Deployed
                 <b-badge variant="light">{{tradeMContractAddress}}</b-badge>
             </b-button>
