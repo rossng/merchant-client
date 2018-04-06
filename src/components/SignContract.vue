@@ -74,7 +74,7 @@
                     return;
                 }
                 let contractAddress = this.tradeMContractAddress;
-                let toAddress = this.toAddress;
+                let vm = this;
                 marketplace.methods.sign(contractAddress).send({
                     from: this.selectedAccount,
                     gas: 100000,
@@ -83,6 +83,7 @@
                     console.log('Error signing contract: ' + err);
                 }).then((txHash) => {
                     console.log(`Signed ${contractAddress}`);
+                    vm.refreshSigningStatus();
                 });
             },
             async refreshSigningStatus() {

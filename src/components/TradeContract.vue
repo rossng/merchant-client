@@ -1,7 +1,9 @@
 <template>
-    <b-card :header="isKilled ? 'Completed contract' : 'Alive contract'" header-tag="header" :footer="`id: ${contractId}`" footer-tag="footer"
-            :title="tradeMContractDeployable.contractInterface.name" style="max-width: 30rem;"
-            :bg-variant="isKilled ? 'secondary' : 'default'" :text-variant="isKilled ? 'light' : 'dark'">
+    <b-card :header="isKilled ? 'Completed contract' : 'Alive contract'" header-tag="header"
+            :footer="`id: ${contractId}`" footer-tag="footer"
+            :title="tradeMContractInterface.name" style="max-width: 30rem; min-width: 30rem;"
+            :bg-variant="isKilled ? 'secondary' : 'default'" :text-variant="isKilled ? 'light' : 'dark'"
+            class="mb-2">
 
         <DeployContract :contract-id="contractId"></DeployContract>
         <ProposeContract :contract-id="contractId"></ProposeContract>
@@ -29,22 +31,21 @@
             }
         },
         computed: {
-            ...mapState('tradeMContracts', ['tradeMContractDeployables', 'tradeMContractInstances', 'tradeMContractInstanceKills']),
+            ...mapState('tradeMContracts', ['tradeMContractInterfaces', 'tradeMContractInstances', 'tradeMContractInstanceKills']),
             ...mapState('tradeContracts', ['tradeContracts']),
             ...mapState('marketplace', ['marketplaceAddress']),
             ...mapState('accounts', ['selectedAccount']),
             haveFile() {
                 return Boolean(this.file);
             },
-            tradeMContractDeployable() {
-                return this.tradeMContractDeployables.find((c) => this.contractId === c.contractInterface.id);
+            tradeMContractInterface() {
+                return this.tradeMContractInterfaces.find((c) => this.contractId === c.id);
             },
             isKilled() {
                 return this.tradeMContractInstanceKills.some((c) => this.contractId === c.id);
             }
         },
-        methods: {
-        }
+        methods: {}
     }
 </script>
 

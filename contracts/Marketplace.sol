@@ -12,6 +12,7 @@ contract Marketplace {
 
     event Proposed(address contractAddress, address indexed to);
     event Signed(address contractAddress);
+    event Delegated(address indexed from, address to);
 
     address public owner_;
 
@@ -57,6 +58,7 @@ contract Marketplace {
             contracts_[msg.sender].holder,
             true
         );
+        emit Delegated(msg.sender, newContract);
     }
 
     function transfer(address to, Commodity commodity, uint quantity) public {
@@ -73,7 +75,6 @@ contract Marketplace {
 
 
 contract BaseContract {
-    event Delegated(BaseContract to);
     event Killed();
     Marketplace public marketplace_;
     address public owner_;
@@ -130,7 +131,6 @@ contract MyContract is BaseContract {
         require(marketplace_.signed(address(this)));
         One next = new One(marketplace_, Marketplace.Commodity.USD);
         marketplace_.delegate(next);
-        emit Delegated(next);
         next.proceed();
         kill();
     }

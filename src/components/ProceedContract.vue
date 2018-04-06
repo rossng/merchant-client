@@ -10,6 +10,7 @@
     export default {
         name: 'ProceedContract',
         beforeMount() {
+            this.refreshSignedStatus();
             window.setInterval(this.refreshSignedStatus.bind(this), 4000);
             // Poll aliveness infrequently because we rely on the event instead
             this.refreshAliveStatus();
@@ -24,7 +25,7 @@
             }
         },
         computed: {
-            ...mapState('tradeMContracts', ['tradeMContractInstances', 'tradeMContractDeployables', 'tradeMContractInstanceKills']),
+            ...mapState('tradeMContracts', ['tradeMContractInterfaces', 'tradeMContractInstances', 'tradeMContractInstanceKills']),
             ...mapState('marketplace', ['marketplaceAddress']),
             ...mapState('accounts', ['selectedAccount']),
             tradeMContractAddress() {
@@ -43,8 +44,8 @@
                     return null;
                 }
             },
-            tradeMContractDeployable() {
-                return this.tradeMContractDeployables.find((c) => this.contractId === c.contractInterface.id);
+            tradeMContractInterface() {
+                return this.tradeMContractInterfaces.find((c) => this.contractId === c.id);
             },
             isSigned() {
                 return this.contractStatus !== null && this.contractStatus.signed;
@@ -61,15 +62,18 @@
                 return this.web3Utils.getMarketplaceContract(this.marketplaceAddress);
             },
             async proceedContract() {
-                let contract = this.web3Utils.makeContractInstance(this.tradeMContractDeployable.contractInterface, this.tradeMContractAddress);
+                let contractInterface = this.tradeMContractInterface;
+                let contract = this.web3Utils.makeContractInstance(contractInterface, this.tradeMContractAddress);
                 contract.methods.proceed().send({
                     from: this.selectedAccount,
                     gas: 500000,
                     gasPrice: '20000000000'
                 }).on('error', function (error) {
                     console.log('Error: ' + error);
-                }).then((transactionHash) => {
-                    console.log(`Proceeded ${this.contractId} (tx: ${transactionHash})`);
+                }).then((receipt) => {
+                    console.log(`Proceeded ${this.contractId} (tx: ${receipt.transactionHash})`);
+                    this.refreshAliveStatus();
+                    this.$forceUpdate();
                 })
             },
             async refreshSignedStatus() {
@@ -83,7 +87,7 @@
                 if (this.tradeMContractAddress === null || this.isKilled) {
                     return;
                 }
-                let contract = this.web3Utils.makeContractInstance(this.tradeMContractDeployable.contractInterface, this.tradeMContractAddress);
+                let contract = this.web3Utils.makeContractInstance(this.tradeMContractInterface, this.tradeMContractAddress);
                 if (!(await contract.methods.alive_().call())) {
                     this.killTradeMContractInstance({id: this.contractId});
                 }

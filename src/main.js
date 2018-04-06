@@ -24,7 +24,8 @@ let getWeb3 = new Promise(function (resolve, reject) {
             // Use Mist/MetaMask's provider
             web3 = new Web3(web3.currentProvider);
             resolve({
-                web3: web3
+                web3: web3,
+                isMetaMask: web3.currentProvider.isMetaMask
             })
         } else {
             reject({
@@ -48,28 +49,34 @@ const vuexLocal = new VuexPersistence({
 const tradeMContractsStore = {
     namespaced: true,
     state: {
-        tradeMContractDeployables: [],
+        tradeMContractInterfaces: [],
+        tradeMContractBinaries: [],
         tradeMContractInstances: [],
         tradeMContractInstanceKills: []
     },
     mutations: {
-        add: (state, payload) => {
-            state.tradeMContractDeployables.push(payload);
+        addInterface: (state, payload) => {
+            state.tradeMContractInterfaces.push(payload);
         },
-        reset: (state) => {
-            state.tradeMContractDeployables = [];
-            state.tradeMContractInstances = [];
+        addDeployable: (state, payload) => {
+            state.tradeMContractBinaries.push(payload);
         },
         addInstance: (state, payload) => {
             state.tradeMContractInstances.push(payload);
         },
         killInstance: (state, payload) => {
             state.tradeMContractInstanceKills.push(payload);
-        }
+        },
+        reset: (state) => {
+            state.tradeMContractInterfaces = [];
+            state.tradeMContractBinaries = [];
+            state.tradeMContractInstances = [];
+            state.tradeMContractInstanceKills = [];
+        },
     },
     getters: {
         getById: (state) => (id) => {
-            return state.tradeMContractDeployables.find(c => id === c.id);
+            return state.tradeMContractBinaries.find(c => id === c.id);
         },
         getAddressById: (state) => (id) => {
             return state.tradeMContractInstances.find(c => id === c.id);
@@ -134,6 +141,7 @@ const store = new Vuex.Store({
 
 getWeb3.then((result) => {
     Vue.prototype.$web3 = result.web3;
+    Vue.prototype.$usingMetaMask = result.isMetaMask;
     Vue.prototype.$web3Utils = new Web3Utils(result.web3);
     Vue.prototype.$baseContract = new result.web3.eth.Contract(BaseContractAbi);
 

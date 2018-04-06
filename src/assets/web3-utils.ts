@@ -1,7 +1,7 @@
 import {Contract, ABIDefinition} from 'web3/types';
 import Web3 from 'web3/index'
 import * as cuid from 'cuid';
-import {MarketplaceAbi, MarketplaceBin} from "./static-contracts";
+import {BaseContractAbi, MarketplaceAbi, MarketplaceBin} from "./static-contracts";
 
 /** Represents a contract with ABI only that has been deployed. */
 export class MContractInstanceInterface {
@@ -37,9 +37,9 @@ export class Web3Utils {
         return {contractInterface: contractInterface, bin: bin};
     }
 
-    public makeContractDeployable(contract: MContractDeployable): Contract {
-        let c = new this.web3.eth.Contract(contract.contractInterface.abi);
-        c.options.data = contract.bin;
+    public makeContract(contract: MContractInterface, bin: string): Contract {
+        let c = new this.web3.eth.Contract(contract.abi);
+        c.options.data = bin;
         return c;
     }
 
@@ -60,6 +60,10 @@ export class Web3Utils {
 
     public makeContractInstance(contractInterface: MContractInterface, address: string): Contract {
         return new this.web3.eth.Contract(contractInterface.abi, address);
+    }
+
+    public makeDelegatedInterface(parentName: string): MContractInterface {
+        return new MContractInterface(cuid(), `${parentName}'`, BaseContractAbi as any);
     }
 
     public async queryMarketplaceContract(marketplace: Contract, contractAddress: string): Promise<ContractDetails> {

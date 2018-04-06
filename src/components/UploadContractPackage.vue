@@ -25,7 +25,7 @@
             }
         },
         computed: {
-            ...mapState('tradeMContracts', ['tradeMContractDeployables', 'tradeMContractInstances']),
+            ...mapState('tradeMContracts', ['tradeMContractInterfaces', 'tradeMContractBinaries', 'tradeMContractInstances']),
             ...mapState('tradeContracts', ['tradeContracts']),
             ...mapState('marketplace', ['marketplaceAddress']),
             haveFile() {
@@ -34,7 +34,8 @@
         },
         methods: {
             ...mapMutations('tradeMContracts', {
-                addTradeMContract: 'add',
+                addTradeMContractInterface: 'addInterface',
+                addTradeMContractDeployable: 'addDeployable',
                 resetTradeMContracts: 'reset',
                 addTradeMContractInstance: 'addInstance'
             }),
@@ -62,7 +63,11 @@
                 console.log(`Parsing contract package`);
                 let deployableContract = this.web3Utils.parseTradePackage(evt.target.result);
 
-                this.addTradeMContract(deployableContract);
+                this.addTradeMContractInterface(deployableContract.contractInterface);
+                this.addTradeMContractDeployable({
+                    id: deployableContract.contractInterface.id,
+                    bin: deployableContract.bin
+                });
             },
             async uploadPackage() {
                 console.log('Uploading contract package');

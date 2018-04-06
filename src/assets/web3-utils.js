@@ -34,7 +34,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 import * as cuid from 'cuid';
-import { MarketplaceAbi, MarketplaceBin } from "./static-contracts";
+import { BaseContractAbi, MarketplaceAbi, MarketplaceBin } from "./static-contracts";
 /** Represents a contract with ABI only that has been deployed. */
 var MContractInstanceInterface = /** @class */ (function () {
     function MContractInstanceInterface(id, name, abi, address) {
@@ -96,9 +96,9 @@ var Web3Utils = /** @class */ (function () {
     Web3Utils.prototype.makeDeployable = function (contractInterface, bin) {
         return { contractInterface: contractInterface, bin: bin };
     };
-    Web3Utils.prototype.makeContractDeployable = function (contract) {
-        var c = new this.web3.eth.Contract(contract.contractInterface.abi);
-        c.options.data = contract.bin;
+    Web3Utils.prototype.makeContract = function (contract, bin) {
+        var c = new this.web3.eth.Contract(contract.abi);
+        c.options.data = bin;
         return c;
     };
     Web3Utils.prototype.parseTradePackage = function (jsonString) {
@@ -116,6 +116,9 @@ var Web3Utils = /** @class */ (function () {
     };
     Web3Utils.prototype.makeContractInstance = function (contractInterface, address) {
         return new this.web3.eth.Contract(contractInterface.abi, address);
+    };
+    Web3Utils.prototype.makeDelegatedInterface = function (parentName) {
+        return new MContractInterface(cuid(), parentName + "'", BaseContractAbi);
     };
     Web3Utils.prototype.queryMarketplaceContract = function (marketplace, contractAddress) {
         return __awaiter(this, void 0, void 0, function () {

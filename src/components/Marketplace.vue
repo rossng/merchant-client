@@ -61,7 +61,7 @@
                 ],
                 balanceQuery: {
                     address: null,
-                    currency: null
+                    currency: 0
                 },
                 inspectQuery: {
                     address: null
@@ -78,7 +78,7 @@
                 awardQuery: {
                     address: null,
                     quantity: null,
-                    currency: null
+                    currency: 0
                 },
                 web3: this.$web3,
                 web3Utils: this.$web3Utils
