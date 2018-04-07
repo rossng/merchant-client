@@ -9,11 +9,11 @@
                   :title="`As ${selectedAccount}`">Deploy
         </b-button>
         <div v-else>
-            <b-button v-clipboard:copy="tradeMContractAddress" class="mb-2">
+            <b-button size="sm" v-clipboard:copy="tradeMContractAddress" class="mb-2">
                 Deployed
                 <b-badge variant="light">{{tradeMContractAddress}}</b-badge>
             </b-button>
-            <b-badge class="mt-2">Owned by {{tradeMContractOwner}}</b-badge>
+            <b-badge class="mt-2">Created by {{tradeMContractCreator}}</b-badge>
         </div>
     </div>
 </template>
@@ -46,10 +46,10 @@
                     return null;
                 }
             },
-            tradeMContractOwner() {
+            tradeMContractCreator() {
                 let instance = this.tradeMContractInstances.find((c) => this.contractId === c.id);
                 if (instance) {
-                    return instance.owner;
+                    return instance.creator;
                 } else {
                     return null;
                 }
@@ -95,7 +95,7 @@
                     console.log(`New MContract ${contractInterface.name} deployed to ${contractInstance.options.address}`);
                     vm.addTradeMContractInstance({
                         id: contractInterface.id,
-                        owner: account,
+                        creator: account,
                         address: contractInstance.options.address
                     });
                     vm.addTradeContract({id: contractInterface.id, contract: contractInstance});
@@ -160,7 +160,7 @@
                 this.addTradeMContractInterface(newInterface);
                 this.addTradeMContractInstance({
                     id: newInterface.id,
-                    owner: this.tradeMContractAddress,
+                    creator: this.tradeMContractAddress,
                     address: newAddress
                 });
             }

@@ -36,10 +36,10 @@
                     return null;
                 }
             },
-            tradeMContractOwner() {
+            tradeMContractCreator() {
                 let instance = this.tradeMContractInstances.find((c) => this.contractId === c.id);
                 if (instance) {
-                    return instance.owner;
+                    return instance.creator;
                 } else {
                     return null;
                 }

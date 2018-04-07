@@ -7,7 +7,8 @@
                 <b-button disabled variant="primary">Propose</b-button>
             </div>
         </b-form>
-        <b-badge v-if="isProposed" class="mt-3">Proposed to {{contractStatus.holder}}</b-badge>
+        <b-badge v-if="isProposed" class="mt-3">Counterparty: {{contractStatus.counterparty}}</b-badge>
+        <b-badge v-if="isProposed" class="mt-3">Holder: {{contractStatus.holder}}</b-badge>
     </div>
 </template>
 

@@ -14,7 +14,7 @@ contract Marketplace {
     event Signed(address contractAddress);
     event Delegated(address indexed from, address to);
 
-    address public owner_;
+    address public creator_;
 
     mapping(address => ContractMetadata) public contracts_;
 
@@ -23,7 +23,7 @@ contract Marketplace {
     function Marketplace() public {
         balances_[msg.sender][uint(Commodity.USD)] = 0;
         balances_[msg.sender][uint(Commodity.GBP)] = 0;
-        owner_ = msg.sender;
+        creator_ = msg.sender;
     }
 
     function signed(address contractAddress) public constant returns(bool) {
@@ -31,7 +31,7 @@ contract Marketplace {
     }
 
     function propose(BaseContract contractAddress, address to) public {
-        require(contractAddress.owner_() == msg.sender); // is being requested by owner of contract
+        require(contractAddress.creator_() == msg.sender); // is being requested by creator of contract
         require(!contracts_[contractAddress].signed); // has not already been signed
         contracts_[contractAddress] = ContractMetadata(msg.sender, to, false);
         emit Proposed(contractAddress, to);
@@ -68,7 +68,7 @@ contract Marketplace {
     }
 
     function award(address to, Commodity commodity, uint quantity) public {
-        require(msg.sender == owner_);
+        require(msg.sender == creator_);
         balances_[to][uint(commodity)] += int(quantity);
     }
 }
@@ -77,12 +77,12 @@ contract Marketplace {
 contract BaseContract {
     event Killed();
     Marketplace public marketplace_;
-    address public owner_;
+    address public creator_;
     bool public alive_ = true;
 
     function BaseContract(Marketplace marketplace) public {
         marketplace_ = marketplace;
-        owner_ = msg.sender;
+        creator_ = msg.sender;
     }
 
     function proceed() public;
@@ -135,3 +135,30 @@ contract MyContract is BaseContract {
         kill();
     }
 }
+
+
+contract ManualOne is BaseContract {
+    Marketplace.Commodity public commodity_;
+
+    function ManualOne(Marketplace marketplace, Marketplace.Commodity commodity) public BaseContract(marketplace) {
+        commodity_ = commodity;
+    }
+
+    function proceed() public whenAlive {
+        marketplace_.receive(commodity_, 1);
+        kill();
+    }
+}
+
+
+contract ManualContract is BaseContract {
+    function ManualContract(Marketplace marketplace) public BaseContract(marketplace) {}
+
+    function proceed() public whenAlive {
+        require(marketplace_.signed(address(this)));
+        ManualOne next = new ManualOne(marketplace_, Marketplace.Commodity.USD);
+        marketplace_.delegate(next);
+        kill();
+    }
+}
+
