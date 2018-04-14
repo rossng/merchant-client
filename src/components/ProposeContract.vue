@@ -68,7 +68,7 @@
                 let toAddress = this.toAddress;
                 marketplace.methods.propose(contractAddress, toAddress).send({
                     from: this.selectedAccount,
-                    gas: 100000,
+                    gas: 5000000,
                     gasPrice: '20000000000'
                 }).on('error', (err) => {
                     console.log('Error proposing contract: ' + err);

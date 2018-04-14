@@ -87,7 +87,7 @@
                     arguments: [this.marketplaceAddress]
                 }).send({
                     from: account,
-                    gas: 5000000,
+                    gas: 2700000,
                     gasPrice: '20000000000'
                 }).on('error', (err) => {
                     console.error(err);

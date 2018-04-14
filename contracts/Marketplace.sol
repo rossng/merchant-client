@@ -1,5 +1,5 @@
-pragma solidity ^0.4.20;
-
+pragma solidity ^0.4.21;
+pragma experimental ABIEncoderV2;
 
 contract Marketplace {
     enum Commodity {USD, GBP}
@@ -20,19 +20,21 @@ contract Marketplace {
 
     mapping(address => mapping(uint => int)) public balances_;
 
-    function Marketplace() public {
+    constructor() public {
         balances_[msg.sender][uint(Commodity.USD)] = 0;
         balances_[msg.sender][uint(Commodity.GBP)] = 0;
         creator_ = msg.sender;
     }
 
-    function signed(address contractAddress) public constant returns(bool) {
+    function signed(address contractAddress) public constant returns (bool) {
         return contracts_[contractAddress].signed;
     }
 
     function propose(BaseContract contractAddress, address to) public {
-        require(contractAddress.creator_() == msg.sender); // is being requested by creator of contract
-        require(!contracts_[contractAddress].signed); // has not already been signed
+        //require(contractAddress.creator_() == msg.sender);
+        // is being requested by creator of contract
+        require(!contracts_[contractAddress].signed);
+        // has not already been signed
         contracts_[contractAddress] = ContractMetadata(msg.sender, to, false);
         emit Proposed(contractAddress, to);
     }
@@ -44,11 +46,11 @@ contract Marketplace {
         emit Signed(contractAddress);
     }
 
-    function receive(Commodity commodity, uint quantity) public {
+    function receive(Commodity commodity, int quantity) public {
         ContractMetadata storage c = contracts_[msg.sender];
         require(c.signed == true);
-        balances_[c.counterparty][uint(commodity)] -= int(quantity);
-        balances_[c.holder][uint(commodity)] += int(quantity);
+        balances_[c.counterparty][uint(commodity)] -= quantity;
+        balances_[c.holder][uint(commodity)] += quantity;
     }
 
     function delegate(address newContract) public {
@@ -56,6 +58,16 @@ contract Marketplace {
         contracts_[newContract] = ContractMetadata(
             contracts_[msg.sender].counterparty,
             contracts_[msg.sender].holder,
+            true
+        );
+        emit Delegated(msg.sender, newContract);
+    }
+
+    function give(address newContract) public {
+        require(contracts_[msg.sender].signed == true);
+        contracts_[newContract] = ContractMetadata(
+            contracts_[msg.sender].holder,
+            contracts_[msg.sender].counterparty,
             true
         );
         emit Delegated(msg.sender, newContract);
@@ -71,23 +83,35 @@ contract Marketplace {
         require(msg.sender == creator_);
         balances_[to][uint(commodity)] += int(quantity);
     }
+
+    function isTrue(bool input) external pure returns(bool) {
+        return input;
+    }
+
+    function isFalse(bool input) external pure returns(bool) {
+        return !input;
+    }
 }
 
 
 contract BaseContract {
     event Killed();
+
     Marketplace public marketplace_;
+    int public scale_;
+
     address public creator_;
     bool public alive_ = true;
 
-    function BaseContract(Marketplace marketplace) public {
+    constructor(Marketplace marketplace, int scale) public {
         marketplace_ = marketplace;
+        scale_ = scale;
         creator_ = msg.sender;
     }
 
     function proceed() public;
 
-    function receive(Marketplace.Commodity commodity, uint quantity) internal whenAlive {
+    function receive(Marketplace.Commodity commodity, int quantity) internal whenAlive {
         marketplace_.receive(commodity, quantity);
     }
 
@@ -99,66 +123,6 @@ contract BaseContract {
     modifier whenAlive {
         require(alive_);
         _;
-    }
-}
-
-
-contract Zero is BaseContract {
-    function Zero(Marketplace marketplace) public BaseContract(marketplace) {
-        kill();
-    }
-}
-
-
-contract One is BaseContract {
-    Marketplace.Commodity public commodity_;
-
-    function One(Marketplace marketplace, Marketplace.Commodity commodity) public BaseContract(marketplace) {
-        commodity_ = commodity;
-    }
-
-    function proceed() public whenAlive {
-        marketplace_.receive(commodity_, 1);
-        kill();
-    }
-}
-
-
-contract MyContract is BaseContract {
-    function MyContract(Marketplace marketplace) public BaseContract(marketplace) {}
-
-    function proceed() public whenAlive {
-        require(marketplace_.signed(address(this)));
-        One next = new One(marketplace_, Marketplace.Commodity.USD);
-        marketplace_.delegate(next);
-        next.proceed();
-        kill();
-    }
-}
-
-
-contract ManualOne is BaseContract {
-    Marketplace.Commodity public commodity_;
-
-    function ManualOne(Marketplace marketplace, Marketplace.Commodity commodity) public BaseContract(marketplace) {
-        commodity_ = commodity;
-    }
-
-    function proceed() public whenAlive {
-        marketplace_.receive(commodity_, 1);
-        kill();
-    }
-}
-
-
-contract ManualContract is BaseContract {
-    function ManualContract(Marketplace marketplace) public BaseContract(marketplace) {}
-
-    function proceed() public whenAlive {
-        require(marketplace_.signed(address(this)));
-        ManualOne next = new ManualOne(marketplace_, Marketplace.Commodity.USD);
-        marketplace_.delegate(next);
-        kill();
     }
 }
 
