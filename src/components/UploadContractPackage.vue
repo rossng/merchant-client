@@ -14,6 +14,7 @@
     import Vue from 'vue';
     import {mapState, mapMutations, mapGetters} from 'vuex';
     import * as cuid from 'cuid';
+    import {Web3Utils} from "../assets/web3-utils";
 
     export default Vue.extend({
         name: 'UploadContractPackage',
@@ -61,7 +62,7 @@
             },
             async parseTradeContract(evt) {
                 console.log(`Parsing contract package`);
-                let deployableContract = this.web3Utils.parseTradePackage(evt.target.result);
+                let deployableContract = Web3Utils.parseTradePackage(evt.target.result);
 
                 this.addTradeMContractInterface(deployableContract.contractInterface);
                 this.addTradeMContractDeployable({

@@ -5,6 +5,7 @@
         <TradeContractList/>
         <AccountList/>
         <Marketplace/>
+        <Observables/>
     </div>
 </template>
 
@@ -13,10 +14,11 @@
     import AccountList from "./components/AccountList"
     import Marketplace from "./components/Marketplace";
     import TradeContractList from "./components/TradeContractList";
+    import Observables from "./components/Observables";
 
     export default {
         name: 'App',
-        components: {TradeContractList, Marketplace, UploadContractPackage, AccountList}
+        components: {Observables, TradeContractList, Marketplace, UploadContractPackage, AccountList}
     };
 </script>
 

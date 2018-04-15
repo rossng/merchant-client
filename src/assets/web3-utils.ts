@@ -1,7 +1,7 @@
 import {Contract, ABIDefinition} from 'web3/types';
 import Web3 from 'web3/index'
 import * as cuid from 'cuid';
-import {BaseContractAbi, MarketplaceAbi, MarketplaceBin} from "./static-contracts";
+import * as contracts from "./static-contracts";
 
 /** Represents a contract with ABI only that has been deployed. */
 export class MContractInstanceInterface {
@@ -33,17 +33,13 @@ export class Web3Utils {
     constructor(private web3: Web3) {
     }
 
-    public makeDeployable(contractInterface: MContractInterface, bin: string): MContractDeployable {
-        return {contractInterface: contractInterface, bin: bin};
-    }
-
     public makeContract(contract: MContractInterface, bin: string): Contract {
         let c = new this.web3.eth.Contract(contract.abi);
         c.options.data = bin;
         return c;
     }
 
-    public parseTradePackage(jsonString: string): MContractDeployable {
+    static parseTradePackage(jsonString: string): MContractDeployable {
         let contractPackage: TradePackage = JSON.parse(jsonString);
         return {
             contractInterface: {id: cuid(), name: contractPackage.name, abi: contractPackage.abi},
@@ -52,8 +48,22 @@ export class Web3Utils {
     }
 
     public getMarketplaceContract(address: string): Contract {
-        let c = new this.web3.eth.Contract(MarketplaceAbi);
-        c.options.data = MarketplaceBin;
+        let c = new this.web3.eth.Contract(contracts.MarketplaceAbi);
+        c.options.data = contracts.MarketplaceBin;
+        c.options.address = address;
+        return c;
+    }
+
+    public getUserIntObservable(address: string): Contract {
+        let c = new this.web3.eth.Contract(contracts.UserIntObservableAbi);
+        c.options.data = contracts.UserIntObservableBin;
+        c.options.address = address;
+        return c;
+    }
+
+    public getUserBoolObservable(address: string): Contract {
+        let c = new this.web3.eth.Contract(contracts.UserBoolObservableAbi);
+        c.options.data = contracts.UserBoolObservableBin;
         c.options.address = address;
         return c;
     }
@@ -62,11 +72,7 @@ export class Web3Utils {
         return new this.web3.eth.Contract(contractInterface.abi, address);
     }
 
-    public makeDelegatedInterface(parentName: string): MContractInterface {
-        return new MContractInterface(cuid(), `${parentName}'`, BaseContractAbi as any);
-    }
-
-    public async queryMarketplaceContract(marketplace: Contract, contractAddress: string): Promise<ContractDetails> {
-        return await marketplace.methods.contracts_(contractAddress).call();
+    static makeDelegatedInterface(parentName: string): MContractInterface {
+        return new MContractInterface(cuid(), `${parentName}'`, contracts.BaseContractAbi as any);
     }
 }

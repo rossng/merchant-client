@@ -2,7 +2,6 @@
 // (runtime-only or standalone) has been set in webpack.base.conf with an alias.
 import Vue from 'vue';
 import Vuex from 'vuex';
-import VuexPersistence from 'vuex-persist';
 import VueClipboard from 'vue-clipboard2'
 import App from './App';
 import router from './router';
@@ -12,6 +11,7 @@ import 'bootstrap/dist/css/bootstrap.css';
 import 'bootstrap-vue/dist/bootstrap-vue.css';
 import {Web3Utils} from "./assets/web3-utils";
 import {MarketplaceAbi, MarketplaceBin, BaseContractAbi} from "./assets/static-contracts";
+import {store} from './assets/store.js'
 
 // https://github.com/DOkwufulueze/eth-vue/blob/ee618d19c80cef4a7c4767e7fd18e5b77da37fb4/src/util/web3/getWeb3.js
 let getWeb3 = new Promise(function (resolve, reject) {
@@ -37,107 +37,8 @@ let getWeb3 = new Promise(function (resolve, reject) {
 });
 
 Vue.config.productionTip = false;
-Vue.use(Vuex);
 Vue.use(BootstrapVue);
 Vue.use(VueClipboard);
-
-const vuexLocal = new VuexPersistence({
-    storage: window.localStorage,
-    reducer: state => ({marketplace: state.marketplace, tradeMContracts: state.tradeMContracts})
-});
-
-const tradeMContractsStore = {
-    namespaced: true,
-    state: {
-        tradeMContractInterfaces: [],
-        tradeMContractBinaries: [],
-        tradeMContractInstances: [],
-        tradeMContractInstanceKills: []
-    },
-    mutations: {
-        addInterface: (state, payload) => {
-            state.tradeMContractInterfaces.push(payload);
-        },
-        addDeployable: (state, payload) => {
-            state.tradeMContractBinaries.push(payload);
-        },
-        addInstance: (state, payload) => {
-            state.tradeMContractInstances.push(payload);
-        },
-        killInstance: (state, payload) => {
-            state.tradeMContractInstanceKills.push(payload);
-        },
-        reset: (state) => {
-            state.tradeMContractInterfaces = [];
-            state.tradeMContractBinaries = [];
-            state.tradeMContractInstances = [];
-            state.tradeMContractInstanceKills = [];
-        },
-    },
-    getters: {
-        getById: (state) => (id) => {
-            return state.tradeMContractBinaries.find(c => id === c.id);
-        },
-        getAddressById: (state) => (id) => {
-            return state.tradeMContractInstances.find(c => id === c.id);
-        }
-    },
-    actions: {}
-};
-
-const tradeContractsStore = {
-    namespaced: true,
-    state: {
-        tradeContracts: []
-    },
-    mutations: {
-        add: (state, payload) => {
-            state.tradeContracts.push(payload);
-        },
-        reset: (state, payload) => {
-            state.tradeContracts = [];
-        }
-    }
-};
-
-const marketplaceStore = {
-    namespaced: true,
-    state: {
-        marketplaceAddress: null
-    },
-    mutations: {
-        setMarketplaceAddress: (state, payload) => {
-            state.marketplaceAddress = payload;
-        }
-    }
-};
-
-const accountsStore = {
-    namespaced: true,
-    state: {
-        accounts: [],
-        selectedAccount: null
-    },
-    mutations: {
-        updateAccounts: (state, payload) => {
-            state.accounts = payload;
-        },
-        updateSelectedAccount: (state, payload) => {
-            state.selectedAccount = payload;
-        }
-    }
-};
-
-const store = new Vuex.Store({
-    modules: {
-        tradeMContracts: tradeMContractsStore,
-        tradeContracts: tradeContractsStore,
-        marketplace: marketplaceStore,
-        accounts: accountsStore
-    },
-    plugins: [vuexLocal.plugin]
-});
-
 
 getWeb3.then((result) => {
     Vue.prototype.$web3 = result.web3;

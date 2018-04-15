@@ -156,7 +156,7 @@
                     console.log(`Contract at ${newAddress} already has instance, won't re-add`);
                     return;
                 }
-                let newInterface = this.web3Utils.makeDelegatedInterface(this.tradeMContractInterface.name);
+                let newInterface = Web3Utils.makeDelegatedInterface(this.tradeMContractInterface.name);
                 this.addTradeMContractInterface(newInterface);
                 this.addTradeMContractInstance({
                     id: newInterface.id,
