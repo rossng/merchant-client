@@ -124,7 +124,7 @@
                             id: contractInterface.id,
                             reason: event.returnValues.killReason
                         });
-                        console.log(`Killed instance of ${contractInterface.id} at ${contractInstance.options.address}`);
+                        console.log(`Killed instance of ${contractInterface.id} at ${contractInstance.options.address} for reason ${event.returnValues.killReason}`);
                     });
                 }
             },
@@ -186,7 +186,7 @@
                             id: this.tradeMContractInterface.id,
                             reason: event.returnValues.killReason
                         });
-                        console.log(`Killed instance of ${this.tradeMContractInterface.id} at ${contractInstance.options.address}`);
+                        console.log(`Killed instance of ${this.tradeMContractInterface.id} at ${contractInstance.options.address} for reason ${event.returnValues.killReason}`);
                     }.bind(vm));
                     vm.$forceUpdate();
                 });
