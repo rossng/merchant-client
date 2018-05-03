@@ -25,7 +25,13 @@
     export default {
         name: 'DeployContract',
         beforeMount() {
-            this.updateDelegations();
+            this.getPastDelegations();
+            this.getPastKills();
+            if (this.tradeMContractAddress !== null) {
+                let contractInstance = this.web3Utils.makeContractInstance(this.tradeMContractInterface, this.tradeMContractAddress);
+                this.subscribeToKills(contractInstance, this.tradeMContractInterface, this);
+                this.subscribeToDelegations(contractInstance, this);
+            }
         },
         props: ['contract-id'],
         data() {
@@ -99,33 +105,44 @@
                         address: contractInstance.options.address
                     });
                     vm.addTradeContract({id: contractInterface.id, contract: contractInstance});
-                    if (!this.$usingMetaMask) {
-                        contractInstance.events.Killed({
-                            fromBlock: 0
-                        }, function (error, event) {
-                            if (error !== null) {
-                                console.error(error);
-                                return;
-                            }
-                            vm.killTradeMContractInstance({id: contractInterface.id});
-                            console.log(`Killed instance of ${contractInterface.id} at ${contractInstance.options.address}`);
-                        });
-                        this.marketplaceContract().events.Delegated({
-                            filter: {from: contractInstance.options.address},
-                            fromBlock: 0
-                        }, function (error, event) {
-                            if (error !== null) {
-                                console.error(error);
-                                return;
-                            }
-                            vm.addDelegatedContract(event.returnValues);
-                        });
-                    }
-                    // TODO: add delegation
+                    vm.subscribeToKills(contractInstance, contractInterface, vm);
+                    vm.subscribeToDelegations(contractInstance, vm);
                     vm.$forceUpdate();
                 });
             },
-            updateDelegations() {
+            subscribeToKills(contractInstance, contractInterface, vm) {
+                if (!vm.$usingMetaMask) {
+                    contractInstance.events.Killed({
+                        filter: {},
+                        fromBlock: 0
+                    }, function (error, event) {
+                        if (error !== null) {
+                            console.error(error);
+                            return;
+                        }
+                        vm.killTradeMContractInstance({
+                            id: contractInterface.id,
+                            reason: event.returnValues.killReason
+                        });
+                        console.log(`Killed instance of ${contractInterface.id} at ${contractInstance.options.address}`);
+                    });
+                }
+            },
+            subscribeToDelegations(contractInstance, vm) {
+                if (!vm.$usingMetaMask) {
+                    vm.marketplaceContract().events.Delegated({
+                        filter: {from: contractInstance.options.address},
+                        fromBlock: 0
+                    }, function (error, event) {
+                        if (error !== null) {
+                            console.error(error);
+                            return;
+                        }
+                        vm.addDelegatedContract(event.returnValues);
+                    });
+                }
+            },
+            getPastDelegations() {
                 if (this.tradeMContractAddress === null) {
                     return;
                 }
@@ -145,6 +162,31 @@
                     events.forEach(function (event) {
                         console.log('Got event');
                         vm.addDelegatedContract(event.returnValues)
+                    }.bind(vm));
+                    vm.$forceUpdate();
+                });
+            },
+            getPastKills() {
+                let vm = this;
+                if (vm.tradeMContractAddress === null) {
+                    return;
+                }
+                console.log(`Get past kills for ${vm.tradeMContractAddress}`);
+                let contractInstance = vm.web3Utils.makeContractInstance(vm.tradeMContractInterface, vm.tradeMContractAddress);
+                contractInstance.getPastEvents('Killed', {
+                    filter: {},
+                    fromBlock: 0
+                }, function (error, events) {
+                    if (error !== null) {
+                        console.error(error);
+                        return;
+                    }
+                    events.forEach(function (event) {
+                        this.killTradeMContractInstance({
+                            id: this.tradeMContractInterface.id,
+                            reason: event.returnValues.killReason
+                        });
+                        console.log(`Killed instance of ${this.tradeMContractInterface.id} at ${contractInstance.options.address}`);
                     }.bind(vm));
                     vm.$forceUpdate();
                 });

@@ -66,7 +66,7 @@
                 let contract = this.web3Utils.makeContractInstance(contractInterface, this.tradeMContractAddress);
                 contract.methods.proceed().send({
                     from: this.selectedAccount,
-                    gas: 500000,
+                    gas: 2000000,
                     gasPrice: '20000000000'
                 }).on('error', function (error) {
                     console.log('Error: ' + error);
@@ -89,7 +89,8 @@
                 }
                 let contract = this.web3Utils.makeContractInstance(this.tradeMContractInterface, this.tradeMContractAddress);
                 if (!(await contract.methods.alive_().call())) {
-                    this.killTradeMContractInstance({id: this.contractId});
+                    // TODO: re-enable?
+                    //this.killTradeMContractInstance({id: this.contractId});
                 }
             }
         }

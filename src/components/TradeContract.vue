@@ -5,6 +5,8 @@
             :bg-variant="isKilled ? 'secondary' : 'default'" :text-variant="isKilled ? 'light' : 'dark'"
             class="mb-2">
 
+        <p v-if="isKilled">{{killReason}}</p>
+
         <DeployContract :contract-id="contractId"></DeployContract>
         <ProposeContract :contract-id="contractId"></ProposeContract>
         <SignContract :contract-id="contractId"></SignContract>
@@ -43,6 +45,14 @@
             },
             isKilled() {
                 return this.tradeMContractInstanceKills.some((c) => this.contractId === c.id);
+            },
+            killReason() {
+                let instance = this.tradeMContractInstanceKills.find((c) => this.contractId === c.id);
+                if (instance) {
+                    return instance.killReason;
+                } else {
+                    return null;
+                }
             }
         },
         methods: {}
