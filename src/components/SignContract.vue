@@ -77,7 +77,7 @@
                 let vm = this;
                 marketplace.methods.sign(contractAddress).send({
                     from: this.selectedAccount,
-                    gas: 100000,
+                    gas: 3000000,
                     gasPrice: '20000000000'
                 }).on('error', (err) => {
                     console.log('Error signing contract: ' + err);
