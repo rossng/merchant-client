@@ -17,11 +17,11 @@ export class MContractInterface {
 }
 
 export class MContractDeployable {
-    public constructor(public contractInterface: MContractInterface, public bin: string) {}
+    public constructor(public contractInterface: MContractInterface, public bin: string, public decisions: number) {}
 }
 
 export class TradePackage {
-    public constructor(public name: string, public bin: string, public abi: ABIDefinition[]) {}
+    public constructor(public name: string, public bin: string, public abi: ABIDefinition[], public decisions: number) {}
 }
 
 export class ContractDetails {
@@ -42,8 +42,9 @@ export class Web3Utils {
     static parseTradePackage(jsonString: string): MContractDeployable {
         let contractPackage: TradePackage = JSON.parse(jsonString);
         return {
-            contractInterface: {id: cuid(), name: contractPackage.name, abi: contractPackage.abi},
-            bin: contractPackage.bin
+            contractInterface: {id: cuid(), name: contractPackage.name, abi: contractPackage.abi, },
+            bin: contractPackage.bin,
+            decisions: contractPackage.decisions
         };
     }
 

@@ -67,7 +67,8 @@
                 this.addTradeMContractInterface(deployableContract.contractInterface);
                 this.addTradeMContractDeployable({
                     id: deployableContract.contractInterface.id,
-                    bin: deployableContract.bin
+                    bin: deployableContract.bin,
+                    decisions: deployableContract.decisions
                 });
             },
             async uploadPackage() {

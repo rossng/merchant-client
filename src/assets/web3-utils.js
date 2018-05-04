@@ -29,18 +29,20 @@ var MContractInterface = /** @class */ (function () {
 }());
 export { MContractInterface };
 var MContractDeployable = /** @class */ (function () {
-    function MContractDeployable(contractInterface, bin) {
+    function MContractDeployable(contractInterface, bin, decisions) {
         this.contractInterface = contractInterface;
         this.bin = bin;
+        this.decisions = decisions;
     }
     return MContractDeployable;
 }());
 export { MContractDeployable };
 var TradePackage = /** @class */ (function () {
-    function TradePackage(name, bin, abi) {
+    function TradePackage(name, bin, abi, decisions) {
         this.name = name;
         this.bin = bin;
         this.abi = abi;
+        this.decisions = decisions;
     }
     return TradePackage;
 }());
@@ -66,8 +68,9 @@ var Web3Utils = /** @class */ (function () {
     Web3Utils.parseTradePackage = function (jsonString) {
         var contractPackage = JSON.parse(jsonString);
         return {
-            contractInterface: { id: cuid(), name: contractPackage.name, abi: contractPackage.abi },
-            bin: contractPackage.bin
+            contractInterface: { id: cuid(), name: contractPackage.name, abi: contractPackage.abi, },
+            bin: contractPackage.bin,
+            decisions: contractPackage.decisions
         };
     };
     Web3Utils.prototype.getMarketplaceContract = function (address) {

@@ -8,6 +8,7 @@
         <p v-if="isKilled">{{killReason}}</p>
 
         <DeployContract :contract-id="contractId"></DeployContract>
+        <ContractDecisions :contract-id="contractId"></ContractDecisions>
         <ProposeContract :contract-id="contractId"></ProposeContract>
         <SignContract :contract-id="contractId"></SignContract>
         <ProceedContract :contract-id="contractId"></ProceedContract>
@@ -20,10 +21,11 @@
     import ProposeContract from "./ProposeContract";
     import SignContract from "./SignContract"
     import ProceedContract from "./ProceedContract";
+    import ContractDecisions from "./ContractDecisions"
 
     export default {
         name: 'TradeContract',
-        components: {ProposeContract, DeployContract, SignContract, ProceedContract},
+        components: {ProposeContract, DeployContract, SignContract, ProceedContract, ContractDecisions},
         props: ['contract-id'],
         data() {
             return {
