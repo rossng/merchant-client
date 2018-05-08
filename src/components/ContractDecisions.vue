@@ -79,6 +79,9 @@
                 });
             },
             async refreshDecisionsStatus() {
+                if (this.selectedAccount === null) {
+                    return;
+                }
                 if (this.tradeMContractAddress === null) {
                     this.decisions = [];
                     return;

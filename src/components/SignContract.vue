@@ -87,6 +87,9 @@
                 });
             },
             async refreshSigningStatus() {
+                if (this.selectedAccount === null) {
+                    return;
+                }
                 if (this.tradeMContractAddress === null) {
                     this.contractStatus = null;
                     return;

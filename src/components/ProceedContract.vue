@@ -77,6 +77,9 @@
                 })
             },
             async refreshSignedStatus() {
+                if (this.selectedAccount === null) {
+                    return;
+                }
                 if (this.tradeMContractAddress === null) {
                     this.contractStatus = null;
                     return;
@@ -84,6 +87,9 @@
                 this.contractStatus = await this.marketplaceContract().methods.contracts_(this.tradeMContractAddress).call();
             },
             async refreshAliveStatus() {
+                if (this.selectedAccount === null) {
+                    return;
+                }
                 if (this.tradeMContractAddress === null || this.isKilled) {
                     return;
                 }
